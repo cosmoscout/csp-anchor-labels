@@ -12,7 +12,7 @@ This plugin can be enabled with the following configuration in your `settings.js
   "plugins": {
     ...
     "csp-anchor-labels": {
-      "defaultEnabled": <bool>,           // If true the labels will be displayed at startup.
+      "defaultEnabled": <bool>,          // If true the labels will be displayed at startup.
       "enableDepthOverlap": <bool>,      // If true the labels will ignore depth for collision.
       "ignoreOverlapThreshold": <float>, // How close labels can get without one being disabled.
       "labelScale": <float>,             // The size of the labels.
@@ -23,6 +23,8 @@ This plugin can be enabled with the following configuration in your `settings.js
   }
 }
 ```
+
+**More in-depth information and some tutorials will be provided soon.**
 
 ## MIT License
 
