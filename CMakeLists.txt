@@ -15,9 +15,6 @@ add_library(csp-anchor-labels SHARED
 target_link_libraries(csp-anchor-labels
   PUBLIC
     cs-core
-    cs-graphics
-    cs-gui
-    cs-scene
 )
 
 # install plugin -----------------------------------------------------------------------------------
