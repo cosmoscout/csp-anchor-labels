@@ -34,7 +34,7 @@ namespace csp::anchorlabels {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void from_json(const nlohmann::json& j, Plugin::Settings& o) {
-  cs::core::parseSettingsSection("csp-anchor-labels", [&] {
+  cs::core::parseSection("csp-anchor-labels", [&] {
     o.mDefaultEnabled         = cs::core::parseProperty<bool>("defaultEnabled", j);
     o.mEnableDepthOverlap     = cs::core::parseProperty<bool>("enableDepthOverlap", j);
     o.mIgnoreOverlapThreshold = cs::core::parseProperty<double>("ignoreOverlapThreshold", j);
