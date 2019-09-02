@@ -34,12 +34,19 @@ namespace csp::anchorlabels {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void from_json(const nlohmann::json& j, Plugin::Settings& o) {
-  o.mDefaultEnabled         = j.at("defaultEnabled").get<bool>();
-  o.mEnableDepthOverlap     = j.at("enableDepthOverlap").get<bool>();
-  o.mIgnoreOverlapThreshold = j.at("ignoreOverlapThreshold").get<double>();
-  o.mLabelScale             = j.at("labelScale").get<double>();
-  o.mDepthScale             = j.at("depthScale").get<double>();
-  o.mLabelOffset            = j.at("labelOffset").get<float>();
+  try {
+    cs::core::parseSettingsSection("csp-anchor-labels", [&] {
+      o.mDefaultEnabled         = cs::core::parseProperty<bool>("defaultEnabled", j);
+      o.mEnableDepthOverlap     = cs::core::parseProperty<bool>("enableDepthOverlap", j);
+      o.mIgnoreOverlapThreshold = cs::core::parseProperty<double>("ignoreOverlapThreshold", j);
+      o.mLabelScale             = cs::core::parseProperty<double>("labelScale", j);
+      o.mDepthScale             = cs::core::parseProperty<double>("depthScale", j);
+      o.mLabelOffset            = cs::core::parseProperty<float>("labelOffset", j);
+    });
+  } catch (std::exception const& e) {
+    std::cerr << e.what() << std::endl;
+    throw e;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -54,6 +61,7 @@ void Plugin::init() {
   std::cout << "Loading: CosmoScout VR Plugin Anchor Labels" << std::endl;
 
   Settings settings = mAllSettings->mPlugins.at("csp-anchor-labels");
+
 
   pEnabled                = settings.mDefaultEnabled;
   pEnableDepthOverlap     = settings.mEnableDepthOverlap;
