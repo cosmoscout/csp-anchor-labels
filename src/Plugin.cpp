@@ -34,12 +34,14 @@ namespace csp::anchorlabels {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void from_json(const nlohmann::json& j, Plugin::Settings& o) {
-  o.mDefaultEnabled         = j.at("defaultEnabled").get<bool>();
-  o.mEnableDepthOverlap     = j.at("enableDepthOverlap").get<bool>();
-  o.mIgnoreOverlapThreshold = j.at("ignoreOverlapThreshold").get<double>();
-  o.mLabelScale             = j.at("labelScale").get<double>();
-  o.mDepthScale             = j.at("depthScale").get<double>();
-  o.mLabelOffset            = j.at("labelOffset").get<float>();
+  cs::core::parseSection("csp-anchor-labels", [&] {
+    o.mDefaultEnabled         = cs::core::parseProperty<bool>("defaultEnabled", j);
+    o.mEnableDepthOverlap     = cs::core::parseProperty<bool>("enableDepthOverlap", j);
+    o.mIgnoreOverlapThreshold = cs::core::parseProperty<double>("ignoreOverlapThreshold", j);
+    o.mLabelScale             = cs::core::parseProperty<double>("labelScale", j);
+    o.mDepthScale             = cs::core::parseProperty<double>("depthScale", j);
+    o.mLabelOffset            = cs::core::parseProperty<float>("labelOffset", j);
+  });
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
