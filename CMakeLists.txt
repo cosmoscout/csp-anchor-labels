@@ -4,6 +4,12 @@
 #                         Copyright: (c) 2019 German Aerospace Center (DLR)                        #
 # ------------------------------------------------------------------------------------------------ #
 
+option(CSP_ANCHOR_LABELS "Enable compilation of this plugin" ON)
+
+if (NOT CSP_ANCHOR_LABELS)
+  return()
+endif()
+
 # build plugin -------------------------------------------------------------------------------------
 
 file(GLOB SOURCE_FILES src/*.cpp)
@@ -20,4 +26,4 @@ target_link_libraries(csp-anchor-labels
 # install plugin -----------------------------------------------------------------------------------
 
 install(TARGETS   csp-anchor-labels DESTINATION "share/plugins")
-install(DIRECTORY "gui"              DESTINATION "share/resources")
+install(DIRECTORY "gui"             DESTINATION "share/resources")
