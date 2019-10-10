@@ -26,6 +26,7 @@ class GuiItem;
 
 namespace cs::core {
 class SolarSystem;
+class GuiManager;
 class TimeControl;
 class InputManager;
 } // namespace cs::core
@@ -45,6 +46,7 @@ class AnchorLabel {
 
   AnchorLabel(cs::scene::CelestialBody const*        body,
       std::shared_ptr<cs::core::SolarSystem> const&  solarSystem,
+      std::shared_ptr<cs::core::GuiManager> const&   guiManager,
       std::shared_ptr<cs::core::TimeControl> const&  timeControl,
       std::shared_ptr<cs::core::InputManager> const& inputManager);
 
@@ -76,9 +78,10 @@ class AnchorLabel {
   VistaOpenGLNode*    mGuiNode      = nullptr;
   VistaTransformNode* mGuiTransform = nullptr;
 
-  std::shared_ptr<cs::core::TimeControl> const&  mTimeControl;
-  std::shared_ptr<cs::core::SolarSystem> const&  mSolarSystem;
-  std::shared_ptr<cs::core::InputManager> const& mInputManager;
+  std::shared_ptr<cs::core::TimeControl>  mTimeControl;
+  std::shared_ptr<cs::core::SolarSystem>  mSolarSystem;
+  std::shared_ptr<cs::core::GuiManager>   mGuiManager;
+  std::shared_ptr<cs::core::InputManager> mInputManager;
 };
 } // namespace csp::anchorlabels
 

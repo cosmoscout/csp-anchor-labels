@@ -71,14 +71,14 @@ void Plugin::init() {
 
   // create labels for all bodies that already exist
   for (auto const& body : mSolarSystem->getBodies()) {
-    mAnchorLabels.push_back(
-        std::make_unique<AnchorLabel>(body.get(), mSolarSystem, mTimeControl, mInputManager));
+    mAnchorLabels.push_back(std::make_unique<AnchorLabel>(
+        body.get(), mSolarSystem, mGuiManager, mTimeControl, mInputManager));
   }
 
   // for all bodies that will be created in the future we also create a label
   addListenerId = mSolarSystem->registerAddBodyListener([this](auto const& body) {
-    mAnchorLabels.push_back(
-        std::make_unique<AnchorLabel>(body.get(), mSolarSystem, mTimeControl, mInputManager));
+    mAnchorLabels.push_back(std::make_unique<AnchorLabel>(
+        body.get(), mSolarSystem, mGuiManager, mTimeControl, mInputManager));
 
     // this feels hacky o.O
     auto newLabel = mAnchorLabels.at(mAnchorLabels.size() - 1).get();

@@ -6,15 +6,14 @@
 
 #include "AnchorLabel.hpp"
 
-#include "../../../src/cs-scene/CelestialAnchorNode.hpp"
-#include "../../../src/cs-scene/CelestialBody.hpp"
-
+#include "../../../src/cs-core/GuiManager.hpp"
 #include "../../../src/cs-core/InputManager.hpp"
 #include "../../../src/cs-core/SolarSystem.hpp"
 #include "../../../src/cs-core/TimeControl.hpp"
-
 #include "../../../src/cs-gui/GuiItem.hpp"
 #include "../../../src/cs-gui/WorldSpaceGuiArea.hpp"
+#include "../../../src/cs-scene/CelestialAnchorNode.hpp"
+#include "../../../src/cs-scene/CelestialBody.hpp"
 #include "../../../src/cs-utils/FrameTimings.hpp"
 
 #include <GL/glew.h>
@@ -33,10 +32,12 @@ namespace csp::anchorlabels {
 
 AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
     std::shared_ptr<cs::core::SolarSystem> const&              solarSystem,
+    std::shared_ptr<cs::core::GuiManager> const&               guiManager,
     std::shared_ptr<cs::core::TimeControl> const&              timeControl,
     std::shared_ptr<cs::core::InputManager> const&             inputManager)
     : mBody(body)
     , mSolarSystem(solarSystem)
+    , mGuiManager(guiManager)
     , mTimeControl(timeControl)
     , mInputManager(inputManager)
     , mGuiArea(std::make_unique<cs::gui::WorldSpaceGuiArea>(120, 30))
@@ -64,8 +65,10 @@ AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
   mGuiArea->setUseLinearDepthBuffer(true);
   mGuiArea->setIgnoreDepth(false);
 
-  mGuiItem->registerCallback("fly_to_body",
-      [this] { mSolarSystem->flyObserverTo(mBody->getCenterName(), mBody->getFrameName(), 5.0); });
+  mGuiItem->registerCallback("fly_to_body", [this] {
+    mSolarSystem->flyObserverTo(mBody->getCenterName(), mBody->getFrameName(), 5.0);
+    mGuiManager->showNotification("Travelling", "to " + mBody->getCenterName(), "send");
+  });
 
   mGuiItem->waitForFinishedLoading();
   mGuiItem->callJavascript("set_label_text", mBody->getCenterName());
