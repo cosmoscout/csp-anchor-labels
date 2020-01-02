@@ -67,7 +67,7 @@ void Plugin::init() {
   mGuiManager->addSettingsSectionToSideBarFromHTML(
       "Anchor Labels", "location_on", "../share/resources/gui/anchor_labels_settings.html");
 
-  mGuiManager->addScriptToSideBarFromJS("../share/resources/gui/js/anchor_labels_settings.js");
+    mGuiManager->addScriptToGuiFromJS("../share/resources/gui/js/anchor_labels_settings.js");
 
   // create labels for all bodies that already exist
   for (auto const& body : mSolarSystem->getBodies()) {
