@@ -51,7 +51,7 @@ Plugin::Plugin()
     : PluginBase() {
 
   // Create default logger for this plugin.
-  cs::utils::logger::init("csp-anchor-labels");
+  spdlog::set_default_logger(cs::utils::logger::createLogger("csp-anchor-labels"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
