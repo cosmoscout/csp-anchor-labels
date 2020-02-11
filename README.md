@@ -6,7 +6,8 @@ This is a default plugin of CosmoScout VR. Hence, any **issues should be reporte
 
 ## Configuration
 
-This plugin can be enabled with the following configuration in your `settings.json`:
+This plugin can be enabled with the following configuration in your `settings.json`.
+The given values present some good starting values for your customization:
 
 ```javascript
 {
@@ -14,13 +15,12 @@ This plugin can be enabled with the following configuration in your `settings.js
   "plugins": {
     ...
     "csp-anchor-labels": {
-      "defaultEnabled": <bool>,          // If true the labels will be displayed at startup.
-      "enableDepthOverlap": <bool>,      // If true the labels will ignore depth for collision.
-      "ignoreOverlapThreshold": <float>, // How close labels can get without one being disabled.
-      "labelScale": <float>,             // The size of the labels.
-      "depthScale": <float>,             // Determines how much smaller far away labels are.
-      "labelOffset": <float>             // How far over the anchor's center the label is
-                                         // placed.
+      "defaultEnabled": true,        // If true the labels will be displayed at startup.
+      "enableDepthOverlap": true,    // If true the labels will ignore depth for collision.
+      "ignoreOverlapThreshold": 0.1, // How close labels can get without one being disabled.
+      "labelScale": 1.2,             // The size of the labels.
+      "depthScale": 1.0,             // Determines how much smaller far away labels are.
+      "labelOffset": 0.2             // How far over the anchor's center the label is placed.
      }
   }
 }
