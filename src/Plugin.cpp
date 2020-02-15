@@ -72,7 +72,7 @@ void Plugin::init() {
   mGuiManager->addSettingsSectionToSideBarFromHTML(
       "Anchor Labels", "location_on", "../share/resources/gui/anchor_labels_settings.html");
 
-  mGuiManager->addScriptToSideBarFromJS("../share/resources/gui/js/anchor_labels_settings.js");
+  mGuiManager->addScriptToGuiFromJS("../share/resources/gui/js/csp-anchor-labels.js");
 
   // create labels for all bodies that already exist
   for (auto const& body : mSolarSystem->getBodies()) {
@@ -101,22 +101,22 @@ void Plugin::init() {
         [body](auto const& label) { return body->getCenterName() == label->getCenterName(); });
   });
 
-  mGuiManager->getSideBar()->registerCallback<bool>(
+  mGuiManager->getGui()->registerCallback<bool>(
       "set_enable_anchor_labels", [this](bool value) { pEnabled = value; });
 
-  mGuiManager->getSideBar()->registerCallback<bool>(
+  mGuiManager->getGui()->registerCallback<bool>(
       "set_enable_depth_overlap", [this](bool value) { pEnableDepthOverlap = value; });
 
-  mGuiManager->getSideBar()->registerCallback<double>("set_anchor_label_ignore_overlap_threshold",
+  mGuiManager->getGui()->registerCallback<double>("set_anchor_label_ignore_overlap_threshold",
       ([this](double value) { pIgnoreOverlapThreshold = value; }));
 
-  mGuiManager->getSideBar()->registerCallback<double>(
+  mGuiManager->getGui()->registerCallback<double>(
       "set_anchor_label_scale", ([this](double value) { pLabelScale = value; }));
 
-  mGuiManager->getSideBar()->registerCallback<double>(
+  mGuiManager->getGui()->registerCallback<double>(
       "set_anchor_label_depth_scale", ([this](double value) { pDepthScale = value; }));
 
-  mGuiManager->getSideBar()->registerCallback<double>(
+  mGuiManager->getGui()->registerCallback<double>(
       "set_anchor_label_offset", ([this](double value) { pLabelOffset = value; }));
 
   spdlog::info("Loading done.");
@@ -201,12 +201,12 @@ void Plugin::deInit() {
   mSolarSystem->unregisterAddBodyListener(addListenerId);
   mSolarSystem->unregisterRemoveBodyListener(removeListenerId);
 
-  mGuiManager->getSideBar()->unregisterCallback("set_enable_anchor_labels");
-  mGuiManager->getSideBar()->unregisterCallback("set_enable_depth_overlap");
-  mGuiManager->getSideBar()->unregisterCallback("set_anchor_label_ignore_overlap_threshold");
-  mGuiManager->getSideBar()->unregisterCallback("set_anchor_label_scale");
-  mGuiManager->getSideBar()->unregisterCallback("set_anchor_label_depth_scale");
-  mGuiManager->getSideBar()->unregisterCallback("set_anchor_label_offset");
+  mGuiManager->getGui()->unregisterCallback("set_enable_anchor_labels");
+  mGuiManager->getGui()->unregisterCallback("set_enable_depth_overlap");
+  mGuiManager->getGui()->unregisterCallback("set_anchor_label_ignore_overlap_threshold");
+  mGuiManager->getGui()->unregisterCallback("set_anchor_label_scale");
+  mGuiManager->getGui()->unregisterCallback("set_anchor_label_depth_scale");
+  mGuiManager->getGui()->unregisterCallback("set_anchor_label_offset");
 
   spdlog::info("Unloading done.");
 }
