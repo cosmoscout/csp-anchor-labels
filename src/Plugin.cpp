@@ -10,6 +10,7 @@
 #include "../../../src/cs-core/GuiManager.hpp"
 #include "../../../src/cs-core/PluginBase.hpp"
 #include "../../../src/cs-core/SolarSystem.hpp"
+#include "../../../src/cs-utils/logger.hpp"
 #include "../../../src/cs-utils/utils.hpp"
 
 #include <iostream>
@@ -48,12 +49,16 @@ void from_json(const nlohmann::json& j, Plugin::Settings& o) {
 
 Plugin::Plugin()
     : PluginBase() {
+
+  // Create default logger for this plugin.
+  spdlog::set_default_logger(cs::utils::logger::createLogger("csp-anchor-labels"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Plugin::init() {
-  std::cout << "Loading: CosmoScout VR Plugin Anchor Labels" << std::endl;
+
+  spdlog::info("Loading plugin...");
 
   Settings settings = mAllSettings->mPlugins.at("csp-anchor-labels");
 
@@ -113,6 +118,8 @@ void Plugin::init() {
 
   mGuiManager->getGui()->registerCallback<double>(
       "set_anchor_label_offset", ([this](double value) { pLabelOffset = value; }));
+
+  spdlog::info("Loading done.");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -187,6 +194,8 @@ void Plugin::update() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Plugin::deInit() {
+  spdlog::info("Unloading plugin...");
+
   mAnchorLabels.clear();
 
   mSolarSystem->unregisterAddBodyListener(addListenerId);
@@ -198,6 +207,8 @@ void Plugin::deInit() {
   mGuiManager->getGui()->unregisterCallback("set_anchor_label_scale");
   mGuiManager->getGui()->unregisterCallback("set_anchor_label_depth_scale");
   mGuiManager->getGui()->unregisterCallback("set_anchor_label_offset");
+
+  spdlog::info("Unloading done.");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
