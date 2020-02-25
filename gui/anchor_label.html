@@ -6,11 +6,6 @@
 
     <link type="text/css" rel="stylesheet" href="css/gui.css">
 
-    <script type="text/javascript">
-        function set_label_text(text) {
-            document.getElementById("anchor-label").innerText = text;
-        }
-    </script>
     <style>
         body {
             overflow: hidden;
@@ -24,6 +19,8 @@
 
         #anchor-label {
             position: relative;
+            text-align: center;
+            font-size: 16pt;
             background: radial-gradient(hsla(0, 0%, 0%, 0.01), hsla(0, 0%, 0%, 0), hsla(0, 0%, 0%, 0));
         }
 
@@ -39,9 +36,15 @@
 </head>
 
 <body>
-    <div id="anchor-label" align="center" style="font-size: 16pt" onclick="window.call_native('fly_to_body')">
+    <div id="anchor-label" onclick="window.call_native('flyToBody')">
         PLACEHOLDER
     </div>
+    
+    <script type="text/javascript">
+        function setLabelText(text) {
+            document.getElementById("anchor-label").innerText = text;
+        }
+    </script>
 </body>
 
 </html>

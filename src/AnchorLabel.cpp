@@ -65,13 +65,14 @@ AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
   mGuiArea->setUseLinearDepthBuffer(true);
   mGuiArea->setIgnoreDepth(false);
 
-  mGuiItem->registerCallback("fly_to_body", [this] {
+  mGuiItem->waitForFinishedLoading();
+
+  mGuiItem->registerCallback("flyToBody", [this] {
     mSolarSystem->flyObserverTo(mBody->getCenterName(), mBody->getFrameName(), 5.0);
     mGuiManager->showNotification("Travelling", "to " + mBody->getCenterName(), "send");
   });
 
-  mGuiItem->waitForFinishedLoading();
-  mGuiItem->callJavascript("set_label_text", mBody->getCenterName());
+  mGuiItem->callJavascript("setLabelText", mBody->getCenterName());
 
   pLabelOffset.onChange().connect(
       [this](float newOffset) { mGuiTransform->SetTranslation(0.0f, newOffset, 0.0f); });
@@ -80,7 +81,7 @@ AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 AnchorLabel::~AnchorLabel() {
-  mGuiItem->unregisterCallback("fly_to_body");
+  mGuiItem->unregisterCallback("flyToBody");
 
   mSolarSystem->unregisterAnchor(mAnchor);
   mGuiArea->removeItem(mGuiItem.get());
