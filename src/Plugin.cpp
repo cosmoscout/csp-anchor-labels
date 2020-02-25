@@ -102,22 +102,22 @@ void Plugin::init() {
   });
 
   mGuiManager->getGui()->registerCallback<bool>(
-      "setEnableAnchorLabels", [this](bool value) { pEnabled = value; });
+      "anchorLabels.setEnabled", [this](bool value) { pEnabled = value; });
 
   mGuiManager->getGui()->registerCallback<bool>(
-      "setEnableDepthOverlap", [this](bool value) { pEnableDepthOverlap = value; });
+      "anchorLabels.setEnableOverlap", [this](bool value) { pEnableDepthOverlap = value; });
 
-  mGuiManager->getGui()->registerCallback<double>("setAnchorLabelIgnoreOverlapThreshold",
+  mGuiManager->getGui()->registerCallback<double>("anchorLabels.setIgnoreOverlapThreshold",
       ([this](double value) { pIgnoreOverlapThreshold = value; }));
 
   mGuiManager->getGui()->registerCallback<double>(
-      "setAnchorLabelScale", ([this](double value) { pLabelScale = value; }));
+      "anchorLabels.setScale", ([this](double value) { pLabelScale = value; }));
 
   mGuiManager->getGui()->registerCallback<double>(
-      "setAnchorLabelDepthScale", ([this](double value) { pDepthScale = value; }));
+      "anchorLabels.setDepthScale", ([this](double value) { pDepthScale = value; }));
 
   mGuiManager->getGui()->registerCallback<double>(
-      "setAnchorLabelOffset", ([this](double value) { pLabelOffset = value; }));
+      "anchorLabels.setOffset", ([this](double value) { pLabelOffset = value; }));
 
   spdlog::info("Loading done.");
 }
@@ -201,12 +201,12 @@ void Plugin::deInit() {
   mSolarSystem->unregisterAddBodyListener(addListenerId);
   mSolarSystem->unregisterRemoveBodyListener(removeListenerId);
 
-  mGuiManager->getGui()->unregisterCallback("setEnableAnchorLabels");
-  mGuiManager->getGui()->unregisterCallback("setEnableDepthOverlap");
-  mGuiManager->getGui()->unregisterCallback("setAnchorLabelIgnoreOverlapThreshold");
-  mGuiManager->getGui()->unregisterCallback("setAnchorLabelScale");
-  mGuiManager->getGui()->unregisterCallback("setAnchorLabelDepthScale");
-  mGuiManager->getGui()->unregisterCallback("setAnchorLabelOffset");
+  mGuiManager->getGui()->unregisterCallback("anchorLabels.setEnabled");
+  mGuiManager->getGui()->unregisterCallback("anchorLabels.setEnableOverlap");
+  mGuiManager->getGui()->unregisterCallback("anchorLabels.setIgnoreOverlapThreshold");
+  mGuiManager->getGui()->unregisterCallback("anchorLabels.setScale");
+  mGuiManager->getGui()->unregisterCallback("anchorLabels.setDepthScale");
+  mGuiManager->getGui()->unregisterCallback("anchorLabels.setOffset");
 
   spdlog::info("Unloading done.");
 }
