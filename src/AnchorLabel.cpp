@@ -65,6 +65,7 @@ AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
   mGuiArea->setUseLinearDepthBuffer(true);
   mGuiArea->setIgnoreDepth(false);
 
+  mGuiItem->setCanScroll(false);
   mGuiItem->waitForFinishedLoading();
 
   mGuiItem->registerCallback("flyToBody", [this] {
