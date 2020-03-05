@@ -101,23 +101,23 @@ void Plugin::init() {
         [body](auto const& label) { return body->getCenterName() == label->getCenterName(); });
   });
 
-  mGuiManager->getGui()->registerCallback<bool>(
-      "anchorLabels.setEnabled", [this](bool value) { pEnabled = value; });
+  mGuiManager->getGui()->registerCallback(
+      "anchorLabels.setEnabled", std::function([this](bool value) { pEnabled = value; }));
 
-  mGuiManager->getGui()->registerCallback<bool>(
-      "anchorLabels.setEnableOverlap", [this](bool value) { pEnableDepthOverlap = value; });
+  mGuiManager->getGui()->registerCallback("anchorLabels.setEnableOverlap",
+      std::function([this](bool value) { pEnableDepthOverlap = value; }));
 
-  mGuiManager->getGui()->registerCallback<double>("anchorLabels.setIgnoreOverlapThreshold",
-      ([this](double value) { pIgnoreOverlapThreshold = value; }));
+  mGuiManager->getGui()->registerCallback("anchorLabels.setIgnoreOverlapThreshold",
+      std::function([this](double value) { pIgnoreOverlapThreshold = value; }));
 
-  mGuiManager->getGui()->registerCallback<double>(
-      "anchorLabels.setScale", ([this](double value) { pLabelScale = value; }));
+  mGuiManager->getGui()->registerCallback(
+      "anchorLabels.setScale", std::function([this](double value) { pLabelScale = value; }));
 
-  mGuiManager->getGui()->registerCallback<double>(
-      "anchorLabels.setDepthScale", ([this](double value) { pDepthScale = value; }));
+  mGuiManager->getGui()->registerCallback(
+      "anchorLabels.setDepthScale", std::function([this](double value) { pDepthScale = value; }));
 
-  mGuiManager->getGui()->registerCallback<double>(
-      "anchorLabels.setOffset", ([this](double value) { pLabelOffset = value; }));
+  mGuiManager->getGui()->registerCallback(
+      "anchorLabels.setOffset", std::function([this](double value) { pLabelOffset = value; }));
 
   spdlog::info("Loading done.");
 }
