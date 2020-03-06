@@ -101,23 +101,30 @@ void Plugin::init() {
         [body](auto const& label) { return body->getCenterName() == label->getCenterName(); });
   });
 
-  mGuiManager->getGui()->registerCallback<bool>(
-      "set_enable_anchor_labels", [this](bool value) { pEnabled = value; });
+  mGuiManager->getGui()->registerCallback("anchorLabels.setEnabled",
+      "Enables or disables anchor labels.",
+      std::function([this](bool value) { pEnabled = value; }));
 
-  mGuiManager->getGui()->registerCallback<bool>(
-      "set_enable_depth_overlap", [this](bool value) { pEnableDepthOverlap = value; });
+  mGuiManager->getGui()->registerCallback("anchorLabels.setEnableOverlap",
+      "Enables or disables overlapping of anchor labels.",
+      std::function([this](bool value) { pEnableDepthOverlap = value; }));
 
-  mGuiManager->getGui()->registerCallback<double>("set_anchor_label_ignore_overlap_threshold",
-      ([this](double value) { pIgnoreOverlapThreshold = value; }));
+  mGuiManager->getGui()->registerCallback("anchorLabels.setIgnoreOverlapThreshold",
+      "Higher values will prevent anchor labels to be hidden when they overlap a little.",
+      std::function([this](double value) { pIgnoreOverlapThreshold = value; }));
 
-  mGuiManager->getGui()->registerCallback<double>(
-      "set_anchor_label_scale", ([this](double value) { pLabelScale = value; }));
+  mGuiManager->getGui()->registerCallback("anchorLabels.setScale",
+      "Sets a global scale multiplier for all anchor labels.",
+      std::function([this](double value) { pLabelScale = value; }));
 
-  mGuiManager->getGui()->registerCallback<double>(
-      "set_anchor_label_depth_scale", ([this](double value) { pDepthScale = value; }));
+  mGuiManager->getGui()->registerCallback("anchorLabels.setDepthScale",
+      "Higher values will make the scale of the anchor labels depend on their distance to the "
+      "observer.",
+      std::function([this](double value) { pDepthScale = value; }));
 
-  mGuiManager->getGui()->registerCallback<double>(
-      "set_anchor_label_offset", ([this](double value) { pLabelOffset = value; }));
+  mGuiManager->getGui()->registerCallback("anchorLabels.setOffset",
+      "Specifies the distance between planet and anchor labels.",
+      std::function([this](double value) { pLabelOffset = value; }));
 
   spdlog::info("Loading done.");
 }
@@ -201,12 +208,12 @@ void Plugin::deInit() {
   mSolarSystem->unregisterAddBodyListener(addListenerId);
   mSolarSystem->unregisterRemoveBodyListener(removeListenerId);
 
-  mGuiManager->getGui()->unregisterCallback("set_enable_anchor_labels");
-  mGuiManager->getGui()->unregisterCallback("set_enable_depth_overlap");
-  mGuiManager->getGui()->unregisterCallback("set_anchor_label_ignore_overlap_threshold");
-  mGuiManager->getGui()->unregisterCallback("set_anchor_label_scale");
-  mGuiManager->getGui()->unregisterCallback("set_anchor_label_depth_scale");
-  mGuiManager->getGui()->unregisterCallback("set_anchor_label_offset");
+  mGuiManager->getGui()->unregisterCallback("anchorLabels.setEnabled");
+  mGuiManager->getGui()->unregisterCallback("anchorLabels.setEnableOverlap");
+  mGuiManager->getGui()->unregisterCallback("anchorLabels.setIgnoreOverlapThreshold");
+  mGuiManager->getGui()->unregisterCallback("anchorLabels.setScale");
+  mGuiManager->getGui()->unregisterCallback("anchorLabels.setDepthScale");
+  mGuiManager->getGui()->unregisterCallback("anchorLabels.setOffset");
 
   spdlog::info("Unloading done.");
 }
