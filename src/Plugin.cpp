@@ -101,23 +101,30 @@ void Plugin::init() {
         [body](auto const& label) { return body->getCenterName() == label->getCenterName(); });
   });
 
-  mGuiManager->getGui()->registerCallback(
-      "anchorLabels.setEnabled", std::function([this](bool value) { pEnabled = value; }));
+  mGuiManager->getGui()->registerCallback("anchorLabels.setEnabled",
+      "Enables or disables anchor labels.",
+      std::function([this](bool value) { pEnabled = value; }));
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setEnableOverlap",
+      "Enables or disables overlapping of anchor labels.",
       std::function([this](bool value) { pEnableDepthOverlap = value; }));
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setIgnoreOverlapThreshold",
+      "Higher values will prevent anchor labels to be hidden when they overlap a little.",
       std::function([this](double value) { pIgnoreOverlapThreshold = value; }));
 
-  mGuiManager->getGui()->registerCallback(
-      "anchorLabels.setScale", std::function([this](double value) { pLabelScale = value; }));
+  mGuiManager->getGui()->registerCallback("anchorLabels.setScale",
+      "Sets a global scale multiplier for all anchor labels.",
+      std::function([this](double value) { pLabelScale = value; }));
 
-  mGuiManager->getGui()->registerCallback(
-      "anchorLabels.setDepthScale", std::function([this](double value) { pDepthScale = value; }));
+  mGuiManager->getGui()->registerCallback("anchorLabels.setDepthScale",
+      "Higher values will make the scale of the anchor labels depend on their distance to the "
+      "observer.",
+      std::function([this](double value) { pDepthScale = value; }));
 
-  mGuiManager->getGui()->registerCallback(
-      "anchorLabels.setOffset", std::function([this](double value) { pLabelOffset = value; }));
+  mGuiManager->getGui()->registerCallback("anchorLabels.setOffset",
+      "Specifies the distance between planet and anchor labels.",
+      std::function([this](double value) { pLabelOffset = value; }));
 
   spdlog::info("Loading done.");
 }
