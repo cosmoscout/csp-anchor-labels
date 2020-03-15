@@ -85,6 +85,8 @@ AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
 AnchorLabel::~AnchorLabel() {
   mGuiItem->unregisterCallback("flyToBody");
 
+  mInputManager->unregisterSelectable(mGuiNode);
+
   mSolarSystem->unregisterAnchor(mAnchor);
   mGuiArea->removeItem(mGuiItem.get());
 
