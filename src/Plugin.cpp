@@ -76,21 +76,24 @@ void Plugin::init() {
 
   // create labels for all bodies that already exist
   for (auto const& body : mSolarSystem->getBodies()) {
-    mAnchorLabels.push_back(std::make_unique<AnchorLabel>(
+    mAnchorLabels.emplace_back(std::make_unique<AnchorLabel>(
         body.get(), mSolarSystem, mGuiManager, mTimeControl, mInputManager));
+
+    mAnchorLabels.back()->pLabelOffset.connectFrom(pLabelOffset);
+    mAnchorLabels.back()->pLabelScale.connectFrom(pLabelScale);
+    mAnchorLabels.back()->pDepthScale.connectFrom(pDepthScale);
+
+    mNeedsResort = true;
   }
 
   // for all bodies that will be created in the future we also create a label
   addListenerId = mSolarSystem->registerAddBodyListener([this](auto const& body) {
-    mAnchorLabels.push_back(std::make_unique<AnchorLabel>(
+    mAnchorLabels.emplace_back(std::make_unique<AnchorLabel>(
         body.get(), mSolarSystem, mGuiManager, mTimeControl, mInputManager));
 
-    // this feels hacky o.O
-    auto newLabel = mAnchorLabels.at(mAnchorLabels.size() - 1).get();
-
-    newLabel->pLabelOffset.connectFrom(pLabelOffset);
-    newLabel->pLabelScale.connectFrom(pLabelScale);
-    newLabel->pDepthScale.connectFrom(pDepthScale);
+    mAnchorLabels.back()->pLabelOffset.connectFrom(pLabelOffset);
+    mAnchorLabels.back()->pLabelScale.connectFrom(pLabelScale);
+    mAnchorLabels.back()->pDepthScale.connectFrom(pDepthScale);
 
     mNeedsResort = true;
   });
@@ -209,6 +212,8 @@ void Plugin::deInit() {
 
   mSolarSystem->unregisterAddBodyListener(addListenerId);
   mSolarSystem->unregisterRemoveBodyListener(removeListenerId);
+
+  mGuiManager->removeSettingsSection("Anchor Labels");
 
   mGuiManager->getGui()->unregisterCallback("anchorLabels.setEnabled");
   mGuiManager->getGui()->unregisterCallback("anchorLabels.setEnableOverlap");

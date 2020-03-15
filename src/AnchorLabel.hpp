@@ -34,7 +34,8 @@ class InputManager;
 namespace csp::anchorlabels {
 class AnchorLabel {
  public:
-  cs::utils::Property<double> pLabelScale = 0.1; ///< The general size of the anchor labels.
+  /// The general size of the anchor labels.
+  cs::utils::Property<double> pLabelScale = 0.1;
 
   /// A factor that determines how much smaller further away labels are. With a value of 1.0 all
   /// labels are the same size regardless of distance from the observer, with a value smaller than
@@ -74,9 +75,8 @@ class AnchorLabel {
 
   std::unique_ptr<cs::gui::WorldSpaceGuiArea> mGuiArea;
   std::unique_ptr<cs::gui::GuiItem>           mGuiItem;
-
-  VistaOpenGLNode*    mGuiNode      = nullptr;
-  VistaTransformNode* mGuiTransform = nullptr;
+  std::unique_ptr<VistaOpenGLNode>            mGuiNode;
+  std::unique_ptr<VistaTransformNode>         mGuiTransform;
 
   std::shared_ptr<cs::core::TimeControl>  mTimeControl;
   std::shared_ptr<cs::core::SolarSystem>  mSolarSystem;

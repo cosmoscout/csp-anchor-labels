@@ -48,18 +48,16 @@ AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
   mAnchor = std::make_shared<cs::scene::CelestialAnchorNode>(sceneGraph->GetRoot(),
       sceneGraph->GetNodeBridge(), "", mBody->getCenterName(), mBody->getFrameName());
 
-  if (mBody->getIsInExistence()) {
-    mSolarSystem->registerAnchor(mAnchor);
-  }
+  mSolarSystem->registerAnchor(mAnchor);
 
-  mGuiTransform = sceneGraph->NewTransformNode(mAnchor.get());
+  mGuiTransform.reset(sceneGraph->NewTransformNode(mAnchor.get()));
   mGuiTransform->SetScale(1.0f,
       static_cast<float>(mGuiArea->getHeight()) / static_cast<float>(mGuiArea->getWidth()), 1.0f);
   mGuiTransform->SetTranslation(0.0f, pLabelOffset.get(), 0.0f);
   mGuiTransform->Rotate(VistaAxisAndAngle(VistaVector3D(0.0, 1.0, 0.0), -glm::pi<float>() / 2.f));
 
-  mGuiNode = sceneGraph->NewOpenGLNode(mGuiTransform, mGuiArea.get());
-  mInputManager->registerSelectable(mGuiNode);
+  mGuiNode.reset(sceneGraph->NewOpenGLNode(mGuiTransform.get(), mGuiArea.get()));
+  mInputManager->registerSelectable(mGuiNode.get());
 
   mGuiArea->addItem(mGuiItem.get());
   mGuiArea->setUseLinearDepthBuffer(true);
@@ -85,19 +83,16 @@ AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
 AnchorLabel::~AnchorLabel() {
   mGuiItem->unregisterCallback("flyToBody");
 
-  mInputManager->unregisterSelectable(mGuiNode);
+  mGuiTransform->DisconnectChild(mGuiNode.get());
+  auto sceneGraph = GetVistaSystem()->GetGraphicsManager()->GetSceneGraph();
+  sceneGraph->GetRoot()->DisconnectChild(mGuiTransform.get());
 
+  mInputManager->unregisterSelectable(mGuiNode.get());
   mSolarSystem->unregisterAnchor(mAnchor);
-  mGuiArea->removeItem(mGuiItem.get());
 
-  pLabelOffset.onChange().disconnectAll();
   pLabelOffset.disconnect();
-
   pLabelScale.disconnect();
   pDepthScale.disconnect();
-
-  delete mGuiNode;
-  delete mGuiTransform;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -189,7 +184,7 @@ double AnchorLabel::distanceToCamera() const {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AnchorLabel::setSortKey(int key) const {
-  VistaOpenSGMaterialTools::SetSortKeyOnSubtree(mGuiTransform, key);
+  VistaOpenSGMaterialTools::SetSortKeyOnSubtree(mGuiTransform.get(), key);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
