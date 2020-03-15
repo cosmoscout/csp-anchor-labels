@@ -97,8 +97,10 @@ void Plugin::init() {
 
   // if a body gets dropped from the solar system remove the label too
   removeListenerId = mSolarSystem->registerRemoveBodyListener([this](auto const& body) {
-    std::remove_if(mAnchorLabels.begin(), mAnchorLabels.end(),
-        [body](auto const& label) { return body->getCenterName() == label->getCenterName(); });
+    mAnchorLabels.erase(
+        std::remove_if(mAnchorLabels.begin(), mAnchorLabels.end(),
+            [body](auto const& label) { return body->getCenterName() == label->getCenterName(); }),
+        mAnchorLabels.end());
   });
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setEnabled",
