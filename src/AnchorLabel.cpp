@@ -48,8 +48,6 @@ AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
   mAnchor = std::make_shared<cs::scene::CelestialAnchorNode>(sceneGraph->GetRoot(),
       sceneGraph->GetNodeBridge(), "", mBody->getCenterName(), mBody->getFrameName());
 
-  mSolarSystem->registerAnchor(mAnchor);
-
   mGuiTransform.reset(sceneGraph->NewTransformNode(mAnchor.get()));
   mGuiTransform->SetScale(1.0f,
       static_cast<float>(mGuiArea->getHeight()) / static_cast<float>(mGuiArea->getWidth()), 1.0f);
@@ -88,7 +86,6 @@ AnchorLabel::~AnchorLabel() {
   sceneGraph->GetRoot()->DisconnectChild(mGuiTransform.get());
 
   mInputManager->unregisterSelectable(mGuiNode.get());
-  mSolarSystem->unregisterAnchor(mAnchor);
 
   pLabelOffset.disconnect();
   pLabelScale.disconnect();
@@ -99,6 +96,8 @@ AnchorLabel::~AnchorLabel() {
 
 void AnchorLabel::update() const {
   if (mBody->getIsInExistence()) {
+    mAnchor->update(mTimeControl->pSimulationTime.get(), mSolarSystem->getObserver());
+
     double distanceToObserver = distanceToCamera();
     double simulationTime(mTimeControl->pSimulationTime.get());
 
@@ -147,7 +146,6 @@ glm::dvec4 AnchorLabel::getScreenSpaceBB() const {
 
 void AnchorLabel::enable() const {
   mGuiItem->setIsEnabled(true);
-  mSolarSystem->registerAnchor(mAnchor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
