@@ -153,53 +153,60 @@ void Plugin::update() {
         continue;
       }
 
-      glm::dvec4 A             = label->getScreenSpaceBB();
-      double     distToCameraA = label->distanceToCamera();
+      try {
 
-      bool canBeAdded = true;
-      for (auto&& drawLabel : labelsToDraw) {
-        if (pEnableDepthOverlap.get()) {
-          // Check the distance relative to each other. If they are far apart we can display both.
-          double distToCameraB    = drawLabel->distanceToCamera();
-          double relativeDistance = distToCameraA < distToCameraB ? distToCameraB / distToCameraA
-                                                                  : distToCameraA / distToCameraB;
-          if (relativeDistance > 1 + pIgnoreOverlapThreshold.get() * 0.1) {
-            continue;
+        glm::dvec4 A             = label->getScreenSpaceBB();
+        double     distToCameraA = label->distanceToCamera();
+
+        bool canBeAdded = true;
+        for (auto&& drawLabel : labelsToDraw) {
+          if (pEnableDepthOverlap.get()) {
+            // Check the distance relative to each other. If they are far apart we can display both.
+            double distToCameraB    = drawLabel->distanceToCamera();
+            double relativeDistance = distToCameraA < distToCameraB ? distToCameraB / distToCameraA
+                                                                    : distToCameraA / distToCameraB;
+            if (relativeDistance > 1 + pIgnoreOverlapThreshold.get() * 0.1) {
+              continue;
+            }
+          }
+
+          // Check if they are colliding. If they collide the bigger label survives. Since the list
+          // is sorted by body size, it is assured that the bigger label gets displayed.
+          glm::dvec4 B   = drawLabel->getScreenSpaceBB();
+          bool collision = B.x + B.z > A.x && B.y + B.w > A.y && A.x + A.z > B.x && A.y + A.w > B.y;
+          if (collision) {
+            canBeAdded = false;
+            break;
           }
         }
 
-        // Check if they are colliding. If they collide the bigger label survives. Since the list
-        // is sorted by body size, it is assured that the bigger label gets displayed.
-        glm::dvec4 B   = drawLabel->getScreenSpaceBB();
-        bool collision = B.x + B.z > A.x && B.y + B.w > A.y && A.x + A.z > B.x && A.y + A.w > B.y;
-        if (collision) {
-          canBeAdded = false;
-          break;
+        if (canBeAdded) {
+          labelsToDraw.insert(label.get());
         }
-      }
 
-      if (canBeAdded) {
-        labelsToDraw.insert(label.get());
+      } catch (std::runtime_error e) {
+        // Ignore missing spice data.
       }
     }
-  }
 
-  for (auto&& label : mAnchorLabels) {
-    if (labelsToDraw.find(label.get()) != labelsToDraw.end()) {
-      label->update();
-      label->enable();
-    } else {
-      label->disable();
+    for (auto&& label : mAnchorLabels) {
+      if (labelsToDraw.find(label.get()) != labelsToDraw.end()) {
+        label->update();
+        label->enable();
+      } else {
+        label->disable();
+      }
     }
-  }
 
-  std::vector<AnchorLabel*> sortedLabels(labelsToDraw.begin(), labelsToDraw.end());
-  std::sort(sortedLabels.begin(), sortedLabels.end(),
-      [](AnchorLabel* a, AnchorLabel* b) { return a->distanceToCamera() < b->distanceToCamera(); });
+    std::vector<AnchorLabel*> sortedLabels(labelsToDraw.begin(), labelsToDraw.end());
+    std::sort(sortedLabels.begin(), sortedLabels.end(), [](AnchorLabel* a, AnchorLabel* b) {
+      return a->distanceToCamera() < b->distanceToCamera();
+    });
 
-  for (int i = 0; i < sortedLabels.size(); ++i) {
-    // a little bit hacky... It probably breaks, when more than 100 labels are present.
-    sortedLabels[i]->setSortKey(static_cast<int>(cs::utils::DrawOrder::eTransparentItems) - i);
+    for (int i = 0; i < sortedLabels.size(); ++i) {
+      // a little bit hacky... It probably breaks, when more than 100 labels are present.
+      sortedLabels[i]->setSortKey(static_cast<int>(cs::utils::DrawOrder::eTransparentItems) - i);
+    }
   }
 }
 
