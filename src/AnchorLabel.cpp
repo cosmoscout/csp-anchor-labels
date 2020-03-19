@@ -72,7 +72,7 @@ AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
 
   mGuiItem->callJavascript("setLabelText", mBody->getCenterName());
 
-  pLabelOffset.onChange().connect(
+  pLabelOffset.connect(
       [this](float newOffset) { mGuiTransform->SetTranslation(0.0f, newOffset, 0.0f); });
 }
 
