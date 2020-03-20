@@ -48,18 +48,14 @@ AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
   mAnchor = std::make_shared<cs::scene::CelestialAnchorNode>(sceneGraph->GetRoot(),
       sceneGraph->GetNodeBridge(), "", mBody->getCenterName(), mBody->getFrameName());
 
-  if (mBody->getIsInExistence()) {
-    mSolarSystem->registerAnchor(mAnchor);
-  }
-
-  mGuiTransform = sceneGraph->NewTransformNode(mAnchor.get());
+  mGuiTransform.reset(sceneGraph->NewTransformNode(mAnchor.get()));
   mGuiTransform->SetScale(1.0f,
       static_cast<float>(mGuiArea->getHeight()) / static_cast<float>(mGuiArea->getWidth()), 1.0f);
   mGuiTransform->SetTranslation(0.0f, pLabelOffset.get(), 0.0f);
   mGuiTransform->Rotate(VistaAxisAndAngle(VistaVector3D(0.0, 1.0, 0.0), -glm::pi<float>() / 2.f));
 
-  mGuiNode = sceneGraph->NewOpenGLNode(mGuiTransform, mGuiArea.get());
-  mInputManager->registerSelectable(mGuiNode);
+  mGuiNode.reset(sceneGraph->NewOpenGLNode(mGuiTransform.get(), mGuiArea.get()));
+  mInputManager->registerSelectable(mGuiNode.get());
 
   mGuiArea->addItem(mGuiItem.get());
   mGuiArea->setUseLinearDepthBuffer(true);
@@ -76,7 +72,7 @@ AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
 
   mGuiItem->callJavascript("setLabelText", mBody->getCenterName());
 
-  pLabelOffset.onChange().connect(
+  pLabelOffset.connect(
       [this](float newOffset) { mGuiTransform->SetTranslation(0.0f, newOffset, 0.0f); });
 }
 
@@ -85,23 +81,23 @@ AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
 AnchorLabel::~AnchorLabel() {
   mGuiItem->unregisterCallback("flyToBody");
 
-  mSolarSystem->unregisterAnchor(mAnchor);
-  mGuiArea->removeItem(mGuiItem.get());
+  mGuiTransform->DisconnectChild(mGuiNode.get());
+  auto sceneGraph = GetVistaSystem()->GetGraphicsManager()->GetSceneGraph();
+  sceneGraph->GetRoot()->DisconnectChild(mGuiTransform.get());
 
-  pLabelOffset.onChange().disconnectAll();
+  mInputManager->unregisterSelectable(mGuiNode.get());
+
   pLabelOffset.disconnect();
-
   pLabelScale.disconnect();
   pDepthScale.disconnect();
-
-  delete mGuiNode;
-  delete mGuiTransform;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AnchorLabel::update() const {
   if (mBody->getIsInExistence()) {
+    mAnchor->update(mTimeControl->pSimulationTime.get(), mSolarSystem->getObserver());
+
     double distanceToObserver = distanceToCamera();
     double simulationTime(mTimeControl->pSimulationTime.get());
 
@@ -150,7 +146,6 @@ glm::dvec4 AnchorLabel::getScreenSpaceBB() const {
 
 void AnchorLabel::enable() const {
   mGuiItem->setIsEnabled(true);
-  mSolarSystem->registerAnchor(mAnchor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -187,7 +182,7 @@ double AnchorLabel::distanceToCamera() const {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AnchorLabel::setSortKey(int key) const {
-  VistaOpenSGMaterialTools::SetSortKeyOnSubtree(mGuiTransform, key);
+  VistaOpenSGMaterialTools::SetSortKeyOnSubtree(mGuiTransform.get(), key);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

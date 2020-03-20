@@ -76,29 +76,34 @@ void Plugin::init() {
 
   // create labels for all bodies that already exist
   for (auto const& body : mSolarSystem->getBodies()) {
-    mAnchorLabels.push_back(std::make_unique<AnchorLabel>(
+    mAnchorLabels.emplace_back(std::make_unique<AnchorLabel>(
         body.get(), mSolarSystem, mGuiManager, mTimeControl, mInputManager));
+
+    mAnchorLabels.back()->pLabelOffset.connectFrom(pLabelOffset);
+    mAnchorLabels.back()->pLabelScale.connectFrom(pLabelScale);
+    mAnchorLabels.back()->pDepthScale.connectFrom(pDepthScale);
+
+    mNeedsResort = true;
   }
 
   // for all bodies that will be created in the future we also create a label
   addListenerId = mSolarSystem->registerAddBodyListener([this](auto const& body) {
-    mAnchorLabels.push_back(std::make_unique<AnchorLabel>(
+    mAnchorLabels.emplace_back(std::make_unique<AnchorLabel>(
         body.get(), mSolarSystem, mGuiManager, mTimeControl, mInputManager));
 
-    // this feels hacky o.O
-    auto newLabel = mAnchorLabels.at(mAnchorLabels.size() - 1).get();
-
-    newLabel->pLabelOffset.connectFrom(pLabelOffset);
-    newLabel->pLabelScale.connectFrom(pLabelScale);
-    newLabel->pDepthScale.connectFrom(pDepthScale);
+    mAnchorLabels.back()->pLabelOffset.connectFrom(pLabelOffset);
+    mAnchorLabels.back()->pLabelScale.connectFrom(pLabelScale);
+    mAnchorLabels.back()->pDepthScale.connectFrom(pDepthScale);
 
     mNeedsResort = true;
   });
 
   // if a body gets dropped from the solar system remove the label too
   removeListenerId = mSolarSystem->registerRemoveBodyListener([this](auto const& body) {
-    std::remove_if(mAnchorLabels.begin(), mAnchorLabels.end(),
-        [body](auto const& label) { return body->getCenterName() == label->getCenterName(); });
+    mAnchorLabels.erase(
+        std::remove_if(mAnchorLabels.begin(), mAnchorLabels.end(),
+            [body](auto const& label) { return body->getCenterName() == label->getCenterName(); }),
+        mAnchorLabels.end());
   });
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setEnabled",
@@ -148,53 +153,60 @@ void Plugin::update() {
         continue;
       }
 
-      glm::dvec4 A             = label->getScreenSpaceBB();
-      double     distToCameraA = label->distanceToCamera();
+      try {
 
-      bool canBeAdded = true;
-      for (auto&& drawLabel : labelsToDraw) {
-        if (pEnableDepthOverlap.get()) {
-          // Check the distance relative to each other. If they are far apart we can display both.
-          double distToCameraB    = drawLabel->distanceToCamera();
-          double relativeDistance = distToCameraA < distToCameraB ? distToCameraB / distToCameraA
-                                                                  : distToCameraA / distToCameraB;
-          if (relativeDistance > 1 + pIgnoreOverlapThreshold.get() * 0.1) {
-            continue;
+        glm::dvec4 A             = label->getScreenSpaceBB();
+        double     distToCameraA = label->distanceToCamera();
+
+        bool canBeAdded = true;
+        for (auto&& drawLabel : labelsToDraw) {
+          if (pEnableDepthOverlap.get()) {
+            // Check the distance relative to each other. If they are far apart we can display both.
+            double distToCameraB    = drawLabel->distanceToCamera();
+            double relativeDistance = distToCameraA < distToCameraB ? distToCameraB / distToCameraA
+                                                                    : distToCameraA / distToCameraB;
+            if (relativeDistance > 1 + pIgnoreOverlapThreshold.get() * 0.1) {
+              continue;
+            }
+          }
+
+          // Check if they are colliding. If they collide the bigger label survives. Since the list
+          // is sorted by body size, it is assured that the bigger label gets displayed.
+          glm::dvec4 B   = drawLabel->getScreenSpaceBB();
+          bool collision = B.x + B.z > A.x && B.y + B.w > A.y && A.x + A.z > B.x && A.y + A.w > B.y;
+          if (collision) {
+            canBeAdded = false;
+            break;
           }
         }
 
-        // Check if they are colliding. If they collide the bigger label survives. Since the list
-        // is sorted by body size, it is assured that the bigger label gets displayed.
-        glm::dvec4 B   = drawLabel->getScreenSpaceBB();
-        bool collision = B.x + B.z > A.x && B.y + B.w > A.y && A.x + A.z > B.x && A.y + A.w > B.y;
-        if (collision) {
-          canBeAdded = false;
-          break;
+        if (canBeAdded) {
+          labelsToDraw.insert(label.get());
         }
-      }
 
-      if (canBeAdded) {
-        labelsToDraw.insert(label.get());
+      } catch (std::runtime_error e) {
+        // Ignore missing spice data.
       }
     }
-  }
 
-  for (auto&& label : mAnchorLabels) {
-    if (labelsToDraw.find(label.get()) != labelsToDraw.end()) {
-      label->update();
-      label->enable();
-    } else {
-      label->disable();
+    for (auto&& label : mAnchorLabels) {
+      if (labelsToDraw.find(label.get()) != labelsToDraw.end()) {
+        label->update();
+        label->enable();
+      } else {
+        label->disable();
+      }
     }
-  }
 
-  std::vector<AnchorLabel*> sortedLabels(labelsToDraw.begin(), labelsToDraw.end());
-  std::sort(sortedLabels.begin(), sortedLabels.end(),
-      [](AnchorLabel* a, AnchorLabel* b) { return a->distanceToCamera() < b->distanceToCamera(); });
+    std::vector<AnchorLabel*> sortedLabels(labelsToDraw.begin(), labelsToDraw.end());
+    std::sort(sortedLabels.begin(), sortedLabels.end(), [](AnchorLabel* a, AnchorLabel* b) {
+      return a->distanceToCamera() < b->distanceToCamera();
+    });
 
-  for (int i = 0; i < sortedLabels.size(); ++i) {
-    // a little bit hacky... It probably breaks, when more than 100 labels are present.
-    sortedLabels[i]->setSortKey(static_cast<int>(cs::utils::DrawOrder::eTransparentItems) - i);
+    for (int i = 0; i < sortedLabels.size(); ++i) {
+      // a little bit hacky... It probably breaks, when more than 100 labels are present.
+      sortedLabels[i]->setSortKey(static_cast<int>(cs::utils::DrawOrder::eTransparentItems) - i);
+    }
   }
 }
 
@@ -207,6 +219,8 @@ void Plugin::deInit() {
 
   mSolarSystem->unregisterAddBodyListener(addListenerId);
   mSolarSystem->unregisterRemoveBodyListener(removeListenerId);
+
+  mGuiManager->removeSettingsSection("Anchor Labels");
 
   mGuiManager->getGui()->unregisterCallback("anchorLabels.setEnabled");
   mGuiManager->getGui()->unregisterCallback("anchorLabels.setEnableOverlap");
