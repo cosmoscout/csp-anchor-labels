@@ -34,15 +34,22 @@ namespace csp::anchorlabels {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void from_json(const nlohmann::json& j, Plugin::Settings& o) {
-  cs::core::parseSection("csp-anchor-labels", [&] {
-    o.mDefaultEnabled         = cs::core::parseProperty<bool>("defaultEnabled", j);
-    o.mEnableDepthOverlap     = cs::core::parseProperty<bool>("enableDepthOverlap", j);
-    o.mIgnoreOverlapThreshold = cs::core::parseProperty<double>("ignoreOverlapThreshold", j);
-    o.mLabelScale             = cs::core::parseProperty<double>("labelScale", j);
-    o.mDepthScale             = cs::core::parseProperty<double>("depthScale", j);
-    o.mLabelOffset            = cs::core::parseProperty<float>("labelOffset", j);
-  });
+void from_json(nlohmann::json const& j, Plugin::Settings& o) {
+  cs::core::Settings::deserialize(j, "defaultEnabled", o.mDefaultEnabled);
+  cs::core::Settings::deserialize(j, "enableDepthOverlap", o.mEnableDepthOverlap);
+  cs::core::Settings::deserialize(j, "ignoreOverlapThreshold", o.mIgnoreOverlapThreshold);
+  cs::core::Settings::deserialize(j, "labelScale", o.mLabelScale);
+  cs::core::Settings::deserialize(j, "depthScale", o.mDepthScale);
+  cs::core::Settings::deserialize(j, "labelOffset", o.mLabelOffset);
+}
+
+void to_json(nlohmann::json& j, Plugin::Settings const& o) {
+  cs::core::Settings::serialize(j, "defaultEnabled", o.mDefaultEnabled);
+  cs::core::Settings::serialize(j, "enableDepthOverlap", o.mEnableDepthOverlap);
+  cs::core::Settings::serialize(j, "ignoreOverlapThreshold", o.mIgnoreOverlapThreshold);
+  cs::core::Settings::serialize(j, "labelScale", o.mLabelScale);
+  cs::core::Settings::serialize(j, "depthScale", o.mDepthScale);
+  cs::core::Settings::serialize(j, "labelOffset", o.mLabelOffset);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
