@@ -129,15 +129,15 @@ void AnchorLabel::update() const {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 glm::dvec4 AnchorLabel::getScreenSpaceBB() const {
-  const float width  = pLabelScale.get() * mGuiArea->getWidth() * 0.0005;
-  const float height = pLabelScale.get() * mGuiArea->getHeight() * 0.0005;
+  double const width  = pLabelScale.get() * mGuiArea->getWidth() * 0.0005;
+  double const height = pLabelScale.get() * mGuiArea->getHeight() * 0.0005;
 
   glm::dvec3 pos =
       mSolarSystem->getObserver().getRelativePosition(mTimeControl->pSimulationTime(), *mAnchor);
-  const auto screenPos = (pos.xyz() / pos.z).xy();
+  auto const screenPos = (pos.xyz() / pos.z).xy();
 
-  const double x = screenPos.x - (width / 2.0);
-  const double y = screenPos.y - (height / 2.0);
+  double const x = screenPos.x - (width / 2.0);
+  double const y = screenPos.y - (height / 2.0);
 
   return {x, y, width, height};
 }
