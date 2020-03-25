@@ -129,7 +129,7 @@ void Plugin::init() {
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setOffset",
       "Specifies the distance between planet and anchor labels.",
-      std::function([this](double value) { pLabelOffset = value; }));
+      std::function([this](double value) { pLabelOffset = static_cast<float>(value); }));
 
   spdlog::info("Loading done.");
 }
