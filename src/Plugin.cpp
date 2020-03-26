@@ -184,7 +184,7 @@ void Plugin::update() {
           labelsToDraw.insert(label.get());
         }
 
-      } catch (std::runtime_error e) {
+      } catch (std::runtime_error const&) {
         // Ignore missing spice data.
       }
     }
@@ -203,7 +203,7 @@ void Plugin::update() {
       return a->distanceToCamera() < b->distanceToCamera();
     });
 
-    for (int i = 0; i < sortedLabels.size(); ++i) {
+    for (size_t i = 0; i < sortedLabels.size(); ++i) {
       // a little bit hacky... It probably breaks, when more than 100 labels are present.
       sortedLabels[i]->setSortKey(static_cast<int>(cs::utils::DrawOrder::eTransparentItems) - i);
     }
