@@ -25,21 +25,22 @@
 #include <VistaKernelOpenSGExt/VistaOpenSGMaterialTools.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/norm.hpp>
+#include <utility>
 
 namespace csp::anchorlabels {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
-    std::shared_ptr<cs::core::SolarSystem> const&              solarSystem,
-    std::shared_ptr<cs::core::GuiManager> const&               guiManager,
-    std::shared_ptr<cs::core::TimeControl> const&              timeControl,
-    std::shared_ptr<cs::core::InputManager> const&             inputManager)
+    std::shared_ptr<cs::core::SolarSystem>                     solarSystem,
+    std::shared_ptr<cs::core::GuiManager>                      guiManager,
+    std::shared_ptr<cs::core::TimeControl>                     timeControl,
+    std::shared_ptr<cs::core::InputManager>                    inputManager)
     : mBody(body)
-    , mSolarSystem(solarSystem)
-    , mGuiManager(guiManager)
-    , mTimeControl(timeControl)
-    , mInputManager(inputManager)
+    , mSolarSystem(std::move(solarSystem))
+    , mGuiManager(std::move(guiManager))
+    , mTimeControl(std::move(timeControl))
+    , mInputManager(std::move(inputManager))
     , mGuiArea(std::make_unique<cs::gui::WorldSpaceGuiArea>(120, 30))
     , mGuiItem(
           std::make_unique<cs::gui::GuiItem>("file://../share/resources/gui/anchor_label.html")) {
