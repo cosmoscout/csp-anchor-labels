@@ -103,7 +103,7 @@ void AnchorLabel::update() const {
     double simulationTime(mTimeControl->pSimulationTime.get());
 
     double const scaleFactor = 0.05;
-    double scale = mSolarSystem->getObserver().getAnchorScale();
+    double       scale       = mSolarSystem->getObserver().getAnchorScale();
     scale *= glm::pow(distanceToObserver, pDepthScale.get()) * pLabelScale.get() * scaleFactor;
     mAnchor->setAnchorScale(scale);
 
