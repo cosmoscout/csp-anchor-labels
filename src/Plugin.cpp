@@ -137,61 +137,58 @@ void Plugin::init() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Plugin::update() {
-  if (mNeedsResort) {
-    std::sort(mAnchorLabels.begin(), mAnchorLabels.end(),
-        [](std::unique_ptr<AnchorLabel>& l1, std::unique_ptr<AnchorLabel>& l2) {
-          return l1->bodySize() > l2->bodySize();
-        });
-    mNeedsResort = false;
-  }
-
-  std::unordered_set<AnchorLabel*> labelsToDraw;
   if (pEnabled.get()) {
 
+    if (mNeedsResort) {
+      std::sort(mAnchorLabels.begin(), mAnchorLabels.end(),
+          [](std::unique_ptr<AnchorLabel>& l1, std::unique_ptr<AnchorLabel>& l2) {
+            return l1->bodySize() > l2->bodySize();
+          });
+      mNeedsResort = false;
+    }
+
+    for (auto&& label : mAnchorLabels) {
+      label->update();
+    }
+
+    std::unordered_set<AnchorLabel*> labelsToDraw;
     for (auto const& label : mAnchorLabels) {
       if (label->shouldBeHidden()) {
         continue;
       }
 
-      try {
+      glm::dvec4 A             = label->getScreenSpaceBB();
+      double     distToCameraA = label->distanceToCamera();
 
-        glm::dvec4 A             = label->getScreenSpaceBB();
-        double     distToCameraA = label->distanceToCamera();
-
-        bool canBeAdded = true;
-        for (auto&& drawLabel : labelsToDraw) {
-          if (pEnableDepthOverlap.get()) {
-            // Check the distance relative to each other. If they are far apart we can display both.
-            double distToCameraB    = drawLabel->distanceToCamera();
-            double relativeDistance = distToCameraA < distToCameraB ? distToCameraB / distToCameraA
-                                                                    : distToCameraA / distToCameraB;
-            if (relativeDistance > 1 + pIgnoreOverlapThreshold.get() * 0.1) {
-              continue;
-            }
-          }
-
-          // Check if they are colliding. If they collide the bigger label survives. Since the list
-          // is sorted by body size, it is assured that the bigger label gets displayed.
-          glm::dvec4 B   = drawLabel->getScreenSpaceBB();
-          bool collision = B.x + B.z > A.x && B.y + B.w > A.y && A.x + A.z > B.x && A.y + A.w > B.y;
-          if (collision) {
-            canBeAdded = false;
-            break;
+      bool canBeAdded = true;
+      for (auto&& drawLabel : labelsToDraw) {
+        if (pEnableDepthOverlap.get()) {
+          // Check the distance relative to each other. If they are far apart we can display both.
+          double distToCameraB    = drawLabel->distanceToCamera();
+          double relativeDistance = distToCameraA < distToCameraB ? distToCameraB / distToCameraA
+                                                                  : distToCameraA / distToCameraB;
+          if (relativeDistance > 1 + pIgnoreOverlapThreshold.get() * 0.1) {
+            continue;
           }
         }
 
-        if (canBeAdded) {
-          labelsToDraw.insert(label.get());
+        // Check if they are colliding. If they collide the bigger label survives. Since the list
+        // is sorted by body size, it is assured that the bigger label gets displayed.
+        glm::dvec4 B   = drawLabel->getScreenSpaceBB();
+        bool collision = B.x + B.z > A.x && B.y + B.w > A.y && A.x + A.z > B.x && A.y + A.w > B.y;
+        if (collision) {
+          canBeAdded = false;
+          break;
         }
+      }
 
-      } catch (std::runtime_error const&) {
-        // Ignore missing spice data.
+      if (canBeAdded) {
+        labelsToDraw.insert(label.get());
       }
     }
 
     for (auto&& label : mAnchorLabels) {
       if (labelsToDraw.find(label.get()) != labelsToDraw.end()) {
-        label->update();
         label->enable();
       } else {
         label->disable();
@@ -206,6 +203,10 @@ void Plugin::update() {
     for (int i = 0; i < static_cast<int>(sortedLabels.size()); ++i) {
       // a little bit hacky... It probably breaks, when more than 100 labels are present.
       sortedLabels[i]->setSortKey(static_cast<int>(cs::utils::DrawOrder::eTransparentItems) - i);
+    }
+  } else {
+    for (auto&& label : mAnchorLabels) {
+      label->disable();
     }
   }
 }

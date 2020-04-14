@@ -94,19 +94,21 @@ AnchorLabel::~AnchorLabel() {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void AnchorLabel::update() const {
+void AnchorLabel::update() {
   if (mBody->getIsInExistence()) {
-    mAnchor->update(mTimeControl->pSimulationTime.get(), mSolarSystem->getObserver());
+    double simulationTime(mTimeControl->pSimulationTime.get());
+
+    cs::scene::CelestialAnchor rawAnchor(mAnchor->getCenterName(), mAnchor->getFrameName());
+    rawAnchor.setAnchorPosition(mAnchor->getAnchorPosition());
+
+    mRelativeAnchorPosition =
+        mSolarSystem->getObserver().getRelativePosition(simulationTime, rawAnchor);
 
     double distanceToObserver = distanceToCamera();
-    double simulationTime(mTimeControl->pSimulationTime.get());
 
     double scale = mSolarSystem->getObserver().getAnchorScale();
     scale *= glm::pow(distanceToObserver, pDepthScale.get()) * pLabelScale.get() * 0.05;
     mAnchor->setAnchorScale(scale);
-
-    cs::scene::CelestialAnchor rawAnchor(mAnchor->getCenterName(), mAnchor->getFrameName());
-    rawAnchor.setAnchorPosition(mAnchor->getAnchorPosition());
 
     auto observerTransform =
         rawAnchor.getRelativeTransform(simulationTime, mSolarSystem->getObserver());
@@ -123,6 +125,8 @@ void AnchorLabel::update() const {
 
     auto rot = glm::toQuat(glm::dmat3(x, y, z));
     mAnchor->setAnchorRotation(rot);
+
+    mAnchor->update(simulationTime, mSolarSystem->getObserver());
   }
 }
 
@@ -132,9 +136,7 @@ glm::dvec4 AnchorLabel::getScreenSpaceBB() const {
   double const width  = pLabelScale.get() * mGuiArea->getWidth() * 0.0005;
   double const height = pLabelScale.get() * mGuiArea->getHeight() * 0.0005;
 
-  glm::dvec3 pos =
-      mSolarSystem->getObserver().getRelativePosition(mTimeControl->pSimulationTime(), *mAnchor);
-  auto const screenPos = (pos.xyz() / pos.z).xy();
+  auto const screenPos = (mRelativeAnchorPosition.xyz() / mRelativeAnchorPosition.z).xy();
 
   double const x = screenPos.x - (width / 2.0);
   double const y = screenPos.y - (height / 2.0);
@@ -175,8 +177,7 @@ double AnchorLabel::bodySize() const {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 double AnchorLabel::distanceToCamera() const {
-  double simulationTime(mTimeControl->pSimulationTime.get());
-  return glm::length(mSolarSystem->getObserver().getRelativePosition(simulationTime, *mAnchor));
+  return glm::length(mRelativeAnchorPosition);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
