@@ -71,17 +71,17 @@ class AnchorLabel {
  private:
   cs::scene::CelestialBody const* const mBody;
 
+  std::shared_ptr<cs::core::SolarSystem>  mSolarSystem;
+  std::shared_ptr<cs::core::GuiManager>   mGuiManager;
+  std::shared_ptr<cs::core::TimeControl>  mTimeControl;
+  std::shared_ptr<cs::core::InputManager> mInputManager;
+
   std::shared_ptr<cs::scene::CelestialAnchorNode> mAnchor;
 
   std::unique_ptr<cs::gui::WorldSpaceGuiArea> mGuiArea;
   std::unique_ptr<cs::gui::GuiItem>           mGuiItem;
   std::unique_ptr<VistaOpenGLNode>            mGuiNode;
   std::unique_ptr<VistaTransformNode>         mGuiTransform;
-
-  std::shared_ptr<cs::core::TimeControl>  mTimeControl;
-  std::shared_ptr<cs::core::SolarSystem>  mSolarSystem;
-  std::shared_ptr<cs::core::GuiManager>   mGuiManager;
-  std::shared_ptr<cs::core::InputManager> mInputManager;
 };
 } // namespace csp::anchorlabels
 

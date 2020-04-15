@@ -135,7 +135,7 @@ void Plugin::init() {
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setOffset",
       "Specifies the distance between planet and anchor labels.",
-      std::function([this](double value) { pLabelOffset = value; }));
+      std::function([this](double value) { pLabelOffset = static_cast<float>(value); }));
 
   spdlog::info("Loading done.");
 }
@@ -190,7 +190,7 @@ void Plugin::update() {
           labelsToDraw.insert(label.get());
         }
 
-      } catch (std::runtime_error e) {
+      } catch (std::runtime_error const&) {
         // Ignore missing spice data.
       }
     }
@@ -209,7 +209,7 @@ void Plugin::update() {
       return a->distanceToCamera() < b->distanceToCamera();
     });
 
-    for (int i = 0; i < sortedLabels.size(); ++i) {
+    for (int i = 0; i < static_cast<int>(sortedLabels.size()); ++i) {
       // a little bit hacky... It probably breaks, when more than 100 labels are present.
       sortedLabels[i]->setSortKey(static_cast<int>(cs::utils::DrawOrder::eTransparentItems) - i);
     }
