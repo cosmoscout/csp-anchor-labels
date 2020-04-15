@@ -53,7 +53,7 @@ class AnchorLabel {
 
   ~AnchorLabel();
 
-  void update() const;
+  void update();
 
   std::string const& getCenterName() const;
 
@@ -82,6 +82,8 @@ class AnchorLabel {
   std::unique_ptr<cs::gui::GuiItem>           mGuiItem;
   std::unique_ptr<VistaOpenGLNode>            mGuiNode;
   std::unique_ptr<VistaTransformNode>         mGuiTransform;
+
+  glm::dvec3 mRelativeAnchorPosition;
 };
 } // namespace csp::anchorlabels
 
