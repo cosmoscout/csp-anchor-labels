@@ -32,11 +32,13 @@ namespace csp::anchorlabels {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
+    std::shared_ptr<Plugin::Settings>                          pluginSettings,
     std::shared_ptr<cs::core::SolarSystem>                     solarSystem,
     std::shared_ptr<cs::core::GuiManager>                      guiManager,
     std::shared_ptr<cs::core::TimeControl>                     timeControl,
     std::shared_ptr<cs::core::InputManager>                    inputManager)
     : mBody(body)
+    , mPluginSettings(std::move(pluginSettings))
     , mSolarSystem(std::move(solarSystem))
     , mGuiManager(std::move(guiManager))
     , mTimeControl(std::move(timeControl))
@@ -52,7 +54,7 @@ AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
   mGuiTransform.reset(sceneGraph->NewTransformNode(mAnchor.get()));
   mGuiTransform->SetScale(1.0F,
       static_cast<float>(mGuiArea->getHeight()) / static_cast<float>(mGuiArea->getWidth()), 1.0F);
-  mGuiTransform->SetTranslation(0.0F, pLabelOffset.get(), 0.0F);
+  mGuiTransform->SetTranslation(0.0F, mPluginSettings->mLabelOffset.get(), 0.0F);
   mGuiTransform->Rotate(VistaAxisAndAngle(VistaVector3D(0.0, 1.0, 0.0), -glm::pi<float>() / 2.F));
 
   mGuiNode.reset(sceneGraph->NewOpenGLNode(mGuiTransform.get(), mGuiArea.get()));
@@ -73,7 +75,7 @@ AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
 
   mGuiItem->callJavascript("setLabelText", mBody->getCenterName());
 
-  pLabelOffset.connect(
+  mOffsetConnection = mPluginSettings->mLabelOffset.connect(
       [this](float newOffset) { mGuiTransform->SetTranslation(0.0F, newOffset, 0.0F); });
 }
 
@@ -88,9 +90,7 @@ AnchorLabel::~AnchorLabel() {
 
   mInputManager->unregisterSelectable(mGuiNode.get());
 
-  pLabelOffset.disconnect();
-  pLabelScale.disconnect();
-  pDepthScale.disconnect();
+  mPluginSettings->mLabelOffset.disconnect(mOffsetConnection);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -109,7 +109,8 @@ void AnchorLabel::update() {
 
     double const scaleFactor = 0.05;
     double       scale       = mSolarSystem->getObserver().getAnchorScale();
-    scale *= glm::pow(distanceToObserver, pDepthScale.get()) * pLabelScale.get() * scaleFactor;
+    scale *= glm::pow(distanceToObserver, mPluginSettings->mDepthScale.get()) *
+             mPluginSettings->mLabelScale.get() * scaleFactor;
     mAnchor->setAnchorScale(scale);
 
     auto observerTransform =
@@ -135,8 +136,8 @@ void AnchorLabel::update() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 glm::dvec4 AnchorLabel::getScreenSpaceBB() const {
-  double const width  = pLabelScale.get() * mGuiArea->getWidth() * 0.0005;
-  double const height = pLabelScale.get() * mGuiArea->getHeight() * 0.0005;
+  double const width  = mPluginSettings->mLabelScale.get() * mGuiArea->getWidth() * 0.0005;
+  double const height = mPluginSettings->mLabelScale.get() * mGuiArea->getHeight() * 0.0005;
 
   auto const screenPos = (mRelativeAnchorPosition.xyz() / mRelativeAnchorPosition.z).xy();
 
