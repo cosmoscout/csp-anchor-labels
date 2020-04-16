@@ -12,6 +12,7 @@
 #include "../../../src/cs-core/SolarSystem.hpp"
 #include "../../../src/cs-utils/logger.hpp"
 #include "../../../src/cs-utils/utils.hpp"
+#include "logger.hpp"
 
 #include <iostream>
 
@@ -24,7 +25,7 @@ EXPORT_FN cs::core::PluginBase* create() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 EXPORT_FN void destroy(cs::core::PluginBase* pluginBase) {
-  delete pluginBase;
+  delete pluginBase; // NOLINT(cppcoreguidelines-owning-memory)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -53,18 +54,9 @@ void to_json(nlohmann::json& j, Plugin::Settings const& o) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Plugin::Plugin()
-    : PluginBase() {
-
-  // Create default logger for this plugin.
-  spdlog::set_default_logger(cs::utils::logger::createLogger("csp-anchor-labels"));
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 void Plugin::init() {
 
-  spdlog::info("Loading plugin...");
+  logger().info("Loading plugin...");
 
   Settings settings = mAllSettings->mPlugins.at("csp-anchor-labels");
 
@@ -137,7 +129,7 @@ void Plugin::init() {
       "Specifies the distance between planet and anchor labels.",
       std::function([this](double value) { pLabelOffset = static_cast<float>(value); }));
 
-  spdlog::info("Loading done.");
+  logger().info("Loading done.");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -220,7 +212,7 @@ void Plugin::update() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Plugin::deInit() {
-  spdlog::info("Unloading plugin...");
+  logger().info("Unloading plugin...");
 
   mAnchorLabels.clear();
 
@@ -236,7 +228,7 @@ void Plugin::deInit() {
   mGuiManager->getGui()->unregisterCallback("anchorLabels.setDepthScale");
   mGuiManager->getGui()->unregisterCallback("anchorLabels.setOffset");
 
-  spdlog::info("Unloading done.");
+  logger().info("Unloading done.");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

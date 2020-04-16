@@ -45,11 +45,11 @@ class AnchorLabel {
   /// The value describes the labels height over the anchor.
   cs::utils::Property<float> pLabelOffset = 0.2f;
 
-  AnchorLabel(cs::scene::CelestialBody const*        body,
-      std::shared_ptr<cs::core::SolarSystem> const&  solarSystem,
-      std::shared_ptr<cs::core::GuiManager> const&   guiManager,
-      std::shared_ptr<cs::core::TimeControl> const&  timeControl,
-      std::shared_ptr<cs::core::InputManager> const& inputManager);
+  AnchorLabel(cs::scene::CelestialBody const* body,
+      std::shared_ptr<cs::core::SolarSystem>  solarSystem,
+      std::shared_ptr<cs::core::GuiManager>   guiManager,
+      std::shared_ptr<cs::core::TimeControl>  timeControl,
+      std::shared_ptr<cs::core::InputManager> inputManager);
 
   ~AnchorLabel();
 
@@ -83,7 +83,7 @@ class AnchorLabel {
   std::unique_ptr<VistaOpenGLNode>            mGuiNode;
   std::unique_ptr<VistaTransformNode>         mGuiTransform;
 
-  glm::dvec3 mRelativeAnchorPosition;
+  glm::dvec3 mRelativeAnchorPosition{};
 };
 } // namespace csp::anchorlabels
 

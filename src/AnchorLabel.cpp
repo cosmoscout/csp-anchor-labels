@@ -25,34 +25,35 @@
 #include <VistaKernelOpenSGExt/VistaOpenSGMaterialTools.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/norm.hpp>
+#include <utility>
 
 namespace csp::anchorlabels {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
-    std::shared_ptr<cs::core::SolarSystem> const&              solarSystem,
-    std::shared_ptr<cs::core::GuiManager> const&               guiManager,
-    std::shared_ptr<cs::core::TimeControl> const&              timeControl,
-    std::shared_ptr<cs::core::InputManager> const&             inputManager)
+    std::shared_ptr<cs::core::SolarSystem>                     solarSystem,
+    std::shared_ptr<cs::core::GuiManager>                      guiManager,
+    std::shared_ptr<cs::core::TimeControl>                     timeControl,
+    std::shared_ptr<cs::core::InputManager>                    inputManager)
     : mBody(body)
-    , mSolarSystem(solarSystem)
-    , mGuiManager(guiManager)
-    , mTimeControl(timeControl)
-    , mInputManager(inputManager)
-    , mGuiArea(std::make_unique<cs::gui::WorldSpaceGuiArea>(120, 30))
+    , mSolarSystem(std::move(solarSystem))
+    , mGuiManager(std::move(guiManager))
+    , mTimeControl(std::move(timeControl))
+    , mInputManager(std::move(inputManager))
+    , mGuiArea(std::make_unique<cs::gui::WorldSpaceGuiArea>(120, 30)) // NOLINT
     , mGuiItem(
           std::make_unique<cs::gui::GuiItem>("file://../share/resources/gui/anchor_label.html")) {
-  auto sceneGraph = GetVistaSystem()->GetGraphicsManager()->GetSceneGraph();
+  auto* sceneGraph = GetVistaSystem()->GetGraphicsManager()->GetSceneGraph();
 
   mAnchor = std::make_shared<cs::scene::CelestialAnchorNode>(sceneGraph->GetRoot(),
       sceneGraph->GetNodeBridge(), "", mBody->getCenterName(), mBody->getFrameName());
 
   mGuiTransform.reset(sceneGraph->NewTransformNode(mAnchor.get()));
-  mGuiTransform->SetScale(1.0f,
-      static_cast<float>(mGuiArea->getHeight()) / static_cast<float>(mGuiArea->getWidth()), 1.0f);
-  mGuiTransform->SetTranslation(0.0f, pLabelOffset.get(), 0.0f);
-  mGuiTransform->Rotate(VistaAxisAndAngle(VistaVector3D(0.0, 1.0, 0.0), -glm::pi<float>() / 2.f));
+  mGuiTransform->SetScale(1.0F,
+      static_cast<float>(mGuiArea->getHeight()) / static_cast<float>(mGuiArea->getWidth()), 1.0F);
+  mGuiTransform->SetTranslation(0.0F, pLabelOffset.get(), 0.0F);
+  mGuiTransform->Rotate(VistaAxisAndAngle(VistaVector3D(0.0, 1.0, 0.0), -glm::pi<float>() / 2.F));
 
   mGuiNode.reset(sceneGraph->NewOpenGLNode(mGuiTransform.get(), mGuiArea.get()));
   mInputManager->registerSelectable(mGuiNode.get());
@@ -73,7 +74,7 @@ AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
   mGuiItem->callJavascript("setLabelText", mBody->getCenterName());
 
   pLabelOffset.connect(
-      [this](float newOffset) { mGuiTransform->SetTranslation(0.0f, newOffset, 0.0f); });
+      [this](float newOffset) { mGuiTransform->SetTranslation(0.0F, newOffset, 0.0F); });
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,7 +83,7 @@ AnchorLabel::~AnchorLabel() {
   mGuiItem->unregisterCallback("flyToBody");
 
   mGuiTransform->DisconnectChild(mGuiNode.get());
-  auto sceneGraph = GetVistaSystem()->GetGraphicsManager()->GetSceneGraph();
+  auto* sceneGraph = GetVistaSystem()->GetGraphicsManager()->GetSceneGraph();
   sceneGraph->GetRoot()->DisconnectChild(mGuiTransform.get());
 
   mInputManager->unregisterSelectable(mGuiNode.get());
@@ -106,8 +107,9 @@ void AnchorLabel::update() {
 
     double distanceToObserver = distanceToCamera();
 
-    double scale = mSolarSystem->getObserver().getAnchorScale();
-    scale *= glm::pow(distanceToObserver, pDepthScale.get()) * pLabelScale.get() * 0.05;
+    double const scaleFactor = 0.05;
+    double       scale       = mSolarSystem->getObserver().getAnchorScale();
+    scale *= glm::pow(distanceToObserver, pDepthScale.get()) * pLabelScale.get() * scaleFactor;
     mAnchor->setAnchorScale(scale);
 
     auto observerTransform =
