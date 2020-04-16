@@ -101,16 +101,20 @@ void Plugin::init() {
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setIgnoreOverlapThreshold",
       "Higher values will prevent anchor labels to be hidden when they overlap a little.",
-      std::function([this](double value) { mPluginSettings->mIgnoreOverlapThreshold = value; }));
+      std::function([this](double value) {
+        mPluginSettings->mIgnoreOverlapThreshold = static_cast<float>(value);
+      }));
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setScale",
-      "Sets a global scale multiplier for all anchor labels.",
-      std::function([this](double value) { mPluginSettings->mLabelScale = value; }));
+      "Sets a global scale multiplier for all anchor labels.", std::function([this](double value) {
+        mPluginSettings->mLabelScale = static_cast<float>(value);
+      }));
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setDepthScale",
       "Higher values will make the scale of the anchor labels depend on their distance to the "
       "observer.",
-      std::function([this](double value) { mPluginSettings->mDepthScale = value; }));
+      std::function(
+          [this](double value) { mPluginSettings->mDepthScale = static_cast<float>(value); }));
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setOffset",
       "Specifies the distance between planet and anchor labels.",
