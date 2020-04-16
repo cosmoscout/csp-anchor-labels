@@ -54,7 +54,6 @@ class Plugin : public cs::core::PluginBase {
   ///       the threshold.
   cs::utils::Property<double> pIgnoreOverlapThreshold = 0.025;
 
-  Plugin();
   void init() override;
   void deInit() override;
   void update() override;

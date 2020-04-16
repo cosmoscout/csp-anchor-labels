@@ -83,7 +83,7 @@ class AnchorLabel {
   std::unique_ptr<VistaOpenGLNode>            mGuiNode;
   std::unique_ptr<VistaTransformNode>         mGuiTransform;
 
-  glm::dvec3 mRelativeAnchorPosition;
+  glm::dvec3 mRelativeAnchorPosition{};
 };
 } // namespace csp::anchorlabels
 
