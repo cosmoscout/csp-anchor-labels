@@ -12,6 +12,7 @@
 #include "../../../src/cs-core/SolarSystem.hpp"
 #include "../../../src/cs-utils/logger.hpp"
 #include "../../../src/cs-utils/utils.hpp"
+#include "logger.hpp"
 
 #include <iostream>
 #include <json.hpp>
@@ -49,7 +50,7 @@ void from_json(const nlohmann::json& j, Plugin::Settings& o) {
 
 void Plugin::init() {
 
-  spdlog::info("Loading plugin...");
+  logger()->info("Loading plugin...");
 
   Settings settings = mAllSettings->mPlugins.at("csp-anchor-labels");
 
@@ -122,7 +123,7 @@ void Plugin::init() {
       "Specifies the distance between planet and anchor labels.",
       std::function([this](double value) { pLabelOffset = static_cast<float>(value); }));
 
-  spdlog::info("Loading done.");
+  logger()->info("Loading done.");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -205,7 +206,7 @@ void Plugin::update() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Plugin::deInit() {
-  spdlog::info("Unloading plugin...");
+  logger()->info("Unloading plugin...");
 
   mAnchorLabels.clear();
 
@@ -221,7 +222,7 @@ void Plugin::deInit() {
   mGuiManager->getGui()->unregisterCallback("anchorLabels.setDepthScale");
   mGuiManager->getGui()->unregisterCallback("anchorLabels.setOffset");
 
-  spdlog::info("Unloading done.");
+  logger()->info("Unloading done.");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
