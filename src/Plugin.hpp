@@ -26,7 +26,7 @@ class Plugin : public cs::core::PluginBase {
     cs::utils::DefaultProperty<bool> mEnabled{true};
 
     /// The general size of the anchor labels.
-    cs::utils::DefaultProperty<float> mLabelScale{0.1F};
+    cs::utils::DefaultProperty<double> mLabelScale{0.1};
 
     /// If set to false, labels will never overlap.
     cs::utils::DefaultProperty<bool> mEnableDepthOverlap{true};
@@ -38,15 +38,15 @@ class Plugin : public cs::core::PluginBase {
     /// E.g.: PlanetA is 100 units away, PlanetB is 120 units away and the value is smaller than
     ///       0.2. Both labels will display, because their relative distance between them is smaller
     ///       than the threshold.
-    cs::utils::DefaultProperty<float> mIgnoreOverlapThreshold{0.025F};
+    cs::utils::DefaultProperty<double> mIgnoreOverlapThreshold{0.025};
 
     /// A factor that determines how much smaller further away labels are. With a value of 1.0 all
     /// labels are the same size regardless of distance from the observer, with a value smaller than
     /// 1.0 the farther away labels are smaller than the nearer ones.
-    cs::utils::DefaultProperty<float> mDepthScale{0.85F};
+    cs::utils::DefaultProperty<double> mDepthScale{0.85};
 
     /// The value describes the labels height over the anchor.
-    cs::utils::DefaultProperty<float> mLabelOffset{0.2F};
+    cs::utils::DefaultProperty<double> mLabelOffset{0.2};
   };
 
   void init() override;

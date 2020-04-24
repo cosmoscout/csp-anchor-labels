@@ -136,8 +136,10 @@ void AnchorLabel::update() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 glm::dvec4 AnchorLabel::getScreenSpaceBB() const {
-  double const width  = mPluginSettings->mLabelScale.get() * mGuiArea->getWidth() * 0.0005;
-  double const height = mPluginSettings->mLabelScale.get() * mGuiArea->getHeight() * 0.0005;
+  double const width =
+      mPluginSettings->mLabelScale.get() * static_cast<double>(mGuiArea->getWidth()) * 0.0005;
+  double const height =
+      mPluginSettings->mLabelScale.get() * static_cast<double>(mGuiArea->getHeight()) * 0.0005;
 
   auto const screenPos = (mRelativeAnchorPosition.xyz() / mRelativeAnchorPosition.z).xy();
 
