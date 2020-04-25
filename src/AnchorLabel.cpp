@@ -54,7 +54,8 @@ AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
   mGuiTransform.reset(sceneGraph->NewTransformNode(mAnchor.get()));
   mGuiTransform->SetScale(1.0F,
       static_cast<float>(mGuiArea->getHeight()) / static_cast<float>(mGuiArea->getWidth()), 1.0F);
-  mGuiTransform->SetTranslation(0.0F, mPluginSettings->mLabelOffset.get(), 0.0F);
+  mGuiTransform->SetTranslation(
+      0.0F, static_cast<float>(mPluginSettings->mLabelOffset.get()), 0.0F);
   mGuiTransform->Rotate(VistaAxisAndAngle(VistaVector3D(0.0, 1.0, 0.0), -glm::pi<float>() / 2.F));
 
   mGuiNode.reset(sceneGraph->NewOpenGLNode(mGuiTransform.get(), mGuiArea.get()));
@@ -75,8 +76,9 @@ AnchorLabel::AnchorLabel(cs::scene::CelestialBody const* const body,
 
   mGuiItem->callJavascript("setLabelText", mBody->getCenterName());
 
-  mOffsetConnection = mPluginSettings->mLabelOffset.connect(
-      [this](float newOffset) { mGuiTransform->SetTranslation(0.0F, newOffset, 0.0F); });
+  mOffsetConnection = mPluginSettings->mLabelOffset.connect([this](double newOffset) {
+    mGuiTransform->SetTranslation(0.0F, static_cast<float>(newOffset), 0.0F);
+  });
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
