@@ -94,32 +94,45 @@ void Plugin::init() {
   mGuiManager->getGui()->registerCallback("anchorLabels.setEnabled",
       "Enables or disables anchor labels.",
       std::function([this](bool value) { mPluginSettings->mEnabled = value; }));
+  mPluginSettings->mEnabled.connectAndTouch(
+      [this](bool enable) { mGuiManager->setCheckbox("anchorLabels.setEnabled", enable); });
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setEnableOverlap",
       "Enables or disables overlapping of anchor labels.",
       std::function([this](bool value) { mPluginSettings->mEnableDepthOverlap = value; }));
+  mPluginSettings->mEnableDepthOverlap.connectAndTouch(
+      [this](bool enable) { mGuiManager->setCheckbox("anchorLabels.setEnableOverlap", enable); });
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setIgnoreOverlapThreshold",
       "Higher values will prevent anchor labels to be hidden when they overlap a little.",
       std::function([this](double value) {
         mPluginSettings->mIgnoreOverlapThreshold = static_cast<float>(value);
       }));
+  mPluginSettings->mIgnoreOverlapThreshold.connectAndTouch([this](float value) {
+    mGuiManager->setSlider("anchorLabels.setIgnoreOverlapThreshold", value);
+  });
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setScale",
       "Sets a global scale multiplier for all anchor labels.", std::function([this](double value) {
         mPluginSettings->mLabelScale = static_cast<float>(value);
       }));
+  mPluginSettings->mLabelScale.connectAndTouch(
+      [this](float value) { mGuiManager->setSlider("anchorLabels.setScale", value); });
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setDepthScale",
       "Higher values will make the scale of the anchor labels depend on their distance to the "
       "observer.",
       std::function(
           [this](double value) { mPluginSettings->mDepthScale = static_cast<float>(value); }));
+  mPluginSettings->mDepthScale.connectAndTouch(
+      [this](float value) { mGuiManager->setSlider("anchorLabels.setDepthScale", value); });
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setOffset",
       "Specifies the distance between planet and anchor labels.",
       std::function(
           [this](double value) { mPluginSettings->mLabelOffset = static_cast<float>(value); }));
+  mPluginSettings->mLabelOffset.connectAndTouch(
+      [this](float value) { mGuiManager->setSlider("anchorLabels.setOffset", value); });
 
   onLoad();
 
