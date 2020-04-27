@@ -15,7 +15,6 @@
 #include "logger.hpp"
 
 #include <iostream>
-#include <json.hpp>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -35,15 +34,22 @@ namespace csp::anchorlabels {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void from_json(const nlohmann::json& j, Plugin::Settings& o) {
-  cs::core::parseSection("csp-anchor-labels", [&] {
-    o.mDefaultEnabled         = cs::core::parseProperty<bool>("defaultEnabled", j);
-    o.mEnableDepthOverlap     = cs::core::parseProperty<bool>("enableDepthOverlap", j);
-    o.mIgnoreOverlapThreshold = cs::core::parseProperty<double>("ignoreOverlapThreshold", j);
-    o.mLabelScale             = cs::core::parseProperty<double>("labelScale", j);
-    o.mDepthScale             = cs::core::parseProperty<double>("depthScale", j);
-    o.mLabelOffset            = cs::core::parseProperty<float>("labelOffset", j);
-  });
+void from_json(nlohmann::json const& j, Plugin::Settings& o) {
+  cs::core::Settings::deserialize(j, "enabled", o.mEnabled);
+  cs::core::Settings::deserialize(j, "enableDepthOverlap", o.mEnableDepthOverlap);
+  cs::core::Settings::deserialize(j, "ignoreOverlapThreshold", o.mIgnoreOverlapThreshold);
+  cs::core::Settings::deserialize(j, "labelScale", o.mLabelScale);
+  cs::core::Settings::deserialize(j, "depthScale", o.mDepthScale);
+  cs::core::Settings::deserialize(j, "labelOffset", o.mLabelOffset);
+}
+
+void to_json(nlohmann::json& j, Plugin::Settings const& o) {
+  cs::core::Settings::serialize(j, "enabled", o.mEnabled);
+  cs::core::Settings::serialize(j, "enableDepthOverlap", o.mEnableDepthOverlap);
+  cs::core::Settings::serialize(j, "ignoreOverlapThreshold", o.mIgnoreOverlapThreshold);
+  cs::core::Settings::serialize(j, "labelScale", o.mLabelScale);
+  cs::core::Settings::serialize(j, "depthScale", o.mDepthScale);
+  cs::core::Settings::serialize(j, "labelOffset", o.mLabelOffset);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -52,45 +58,32 @@ void Plugin::init() {
 
   logger().info("Loading plugin...");
 
-  Settings settings = mAllSettings->mPlugins.at("csp-anchor-labels");
-
-  pEnabled                = settings.mDefaultEnabled;
-  pEnableDepthOverlap     = settings.mEnableDepthOverlap;
-  pIgnoreOverlapThreshold = settings.mIgnoreOverlapThreshold;
-  pLabelScale             = settings.mLabelScale;
-  pDepthScale             = settings.mDepthScale;
-  pLabelOffset            = settings.mLabelOffset;
+  mOnLoadConnection = mAllSettings->onLoad().connect([this]() { onLoad(); });
+  mOnSaveConnection = mAllSettings->onSave().connect(
+      [this]() { mAllSettings->mPlugins["csp-anchor-labels"] = *mPluginSettings; });
 
   mGuiManager->addSettingsSectionToSideBarFromHTML(
       "Anchor Labels", "location_on", "../share/resources/gui/anchor_labels_settings.html");
 
   mGuiManager->addScriptToGuiFromJS("../share/resources/gui/js/csp-anchor-labels.js");
 
-  // create labels for all bodies that already exist
+  // Create labels for all bodies that already exist
   for (auto const& body : mSolarSystem->getBodies()) {
     mAnchorLabels.emplace_back(std::make_unique<AnchorLabel>(
-        body.get(), mSolarSystem, mGuiManager, mTimeControl, mInputManager));
-
-    mAnchorLabels.back()->pLabelOffset.connectFrom(pLabelOffset);
-    mAnchorLabels.back()->pLabelScale.connectFrom(pLabelScale);
-    mAnchorLabels.back()->pDepthScale.connectFrom(pDepthScale);
+        body.get(), mPluginSettings, mSolarSystem, mGuiManager, mTimeControl, mInputManager));
 
     mNeedsResort = true;
   }
 
-  // for all bodies that will be created in the future we also create a label
+  // For all bodies that will be created in the future we also create a label
   addListenerId = mSolarSystem->registerAddBodyListener([this](auto const& body) {
     mAnchorLabels.emplace_back(std::make_unique<AnchorLabel>(
-        body.get(), mSolarSystem, mGuiManager, mTimeControl, mInputManager));
-
-    mAnchorLabels.back()->pLabelOffset.connectFrom(pLabelOffset);
-    mAnchorLabels.back()->pLabelScale.connectFrom(pLabelScale);
-    mAnchorLabels.back()->pDepthScale.connectFrom(pDepthScale);
+        body.get(), mPluginSettings, mSolarSystem, mGuiManager, mTimeControl, mInputManager));
 
     mNeedsResort = true;
   });
 
-  // if a body gets dropped from the solar system remove the label too
+  // If a body gets dropped from the solar system remove the label too
   removeListenerId = mSolarSystem->registerRemoveBodyListener([this](auto const& body) {
     mAnchorLabels.erase(
         std::remove_if(mAnchorLabels.begin(), mAnchorLabels.end(),
@@ -100,28 +93,35 @@ void Plugin::init() {
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setEnabled",
       "Enables or disables anchor labels.",
-      std::function([this](bool value) { pEnabled = value; }));
+      std::function([this](bool value) { mPluginSettings->mEnabled = value; }));
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setEnableOverlap",
       "Enables or disables overlapping of anchor labels.",
-      std::function([this](bool value) { pEnableDepthOverlap = value; }));
+      std::function([this](bool value) { mPluginSettings->mEnableDepthOverlap = value; }));
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setIgnoreOverlapThreshold",
       "Higher values will prevent anchor labels to be hidden when they overlap a little.",
-      std::function([this](double value) { pIgnoreOverlapThreshold = value; }));
+      std::function([this](double value) {
+        mPluginSettings->mIgnoreOverlapThreshold = static_cast<float>(value);
+      }));
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setScale",
-      "Sets a global scale multiplier for all anchor labels.",
-      std::function([this](double value) { pLabelScale = value; }));
+      "Sets a global scale multiplier for all anchor labels.", std::function([this](double value) {
+        mPluginSettings->mLabelScale = static_cast<float>(value);
+      }));
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setDepthScale",
       "Higher values will make the scale of the anchor labels depend on their distance to the "
       "observer.",
-      std::function([this](double value) { pDepthScale = value; }));
+      std::function(
+          [this](double value) { mPluginSettings->mDepthScale = static_cast<float>(value); }));
 
   mGuiManager->getGui()->registerCallback("anchorLabels.setOffset",
       "Specifies the distance between planet and anchor labels.",
-      std::function([this](double value) { pLabelOffset = static_cast<float>(value); }));
+      std::function(
+          [this](double value) { mPluginSettings->mLabelOffset = static_cast<float>(value); }));
+
+  onLoad();
 
   logger().info("Loading done.");
 }
@@ -129,7 +129,7 @@ void Plugin::init() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Plugin::update() {
-  if (pEnabled.get()) {
+  if (mPluginSettings->mEnabled.get()) {
 
     if (mNeedsResort) {
       std::sort(mAnchorLabels.begin(), mAnchorLabels.end(),
@@ -154,12 +154,12 @@ void Plugin::update() {
 
       bool canBeAdded = true;
       for (auto&& drawLabel : labelsToDraw) {
-        if (pEnableDepthOverlap.get()) {
+        if (mPluginSettings->mEnableDepthOverlap.get()) {
           // Check the distance relative to each other. If they are far apart we can display both.
           double distToCameraB    = drawLabel->distanceToCamera();
           double relativeDistance = distToCameraA < distToCameraB ? distToCameraB / distToCameraA
                                                                   : distToCameraA / distToCameraB;
-          if (relativeDistance > 1 + pIgnoreOverlapThreshold.get() * 0.1) {
+          if (relativeDistance > 1 + mPluginSettings->mIgnoreOverlapThreshold.get() * 0.1) {
             continue;
           }
         }
@@ -222,7 +222,17 @@ void Plugin::deInit() {
   mGuiManager->getGui()->unregisterCallback("anchorLabels.setDepthScale");
   mGuiManager->getGui()->unregisterCallback("anchorLabels.setOffset");
 
+  mAllSettings->onLoad().disconnect(mOnLoadConnection);
+  mAllSettings->onSave().disconnect(mOnSaveConnection);
+
   logger().info("Unloading done.");
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void Plugin::onLoad() {
+  // Read settings from JSON.
+  from_json(mAllSettings->mPlugins.at("csp-anchor-labels"), *mPluginSettings);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

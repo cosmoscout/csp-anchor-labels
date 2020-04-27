@@ -15,7 +15,7 @@ The given values present some good starting values for your customization:
   "plugins": {
     ...
     "csp-anchor-labels": {
-      "defaultEnabled": true,        // If true the labels will be displayed at startup.
+      "enabled": true,               // If true the labels will be displayed at startup.
       "enableDepthOverlap": true,    // If true the labels will ignore depth for collision.
       "ignoreOverlapThreshold": 0.1, // How close labels can get without one being disabled.
       "labelScale": 1.2,             // The size of the labels.
